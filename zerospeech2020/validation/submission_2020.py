@@ -6,7 +6,7 @@ import shutil
 import tempfile
 import zipfile
 
-# from submission_2017 import Submission2017
+from .submission_2017 import Submission2017
 from .submission_2019 import Submission2019
 from .utils import validate_directory, validate_yaml
 
@@ -56,7 +56,7 @@ class Submission2020:
     def _validate_root(self):
         existing = validate_directory(
             self._submission, 'top-level',
-            ['2017', '2019', 'metadata.yaml'], self._log)
+            ['metadata.yaml'], self._log, optional_entries=['2017', '2019'])
 
         if '2017' not in existing and '2019' not in existing:
             raise ValueError(
@@ -81,11 +81,10 @@ class Submission2020:
 
     def _validate_2017(self):
         """Checks if submission for 2017 subset is valid"""
-        # Submission2017(
-        #     os.path.join(self._submission, '2017'),
-        #     self._is_open_source,
-        #     log=self._log).validate()
-        pass
+        Submission2017(
+            os.path.join(self._submission, '2017'),
+            self._is_open_source,
+            log=self._log).validate()
 
     def _validate_2019(self):
         """Checks if submission for 2019 subset is valid"""

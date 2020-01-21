@@ -2,6 +2,7 @@
 
 import logging
 import os
+import pkg_resources
 
 from zerospeech2020 import read_2019_features
 from zerospeech2020.validation.utils import (
@@ -30,27 +31,27 @@ class Submission2019:
         validate_directory(
             self._submission, '2019',
             ['metadata.yaml', 'english', 'surprise'] +
-            ['code'] if self._is_open_source else [],
-            self._log, all_exist=True)
-
-        validate_code(
-            os.path.join(self._submission, 'code'),
-            '2019/code', self._is_open_source, self._log)
+            ['code'] if self._is_open_source else [], self._log)
 
         # detect if we have auxiliary 1 and 2 embeddings (because in this
         # case we must check they are described in metadata)
         do_aux1 = self._detect_auxiliary('auxiliary_embedding1')
         if do_aux1:
-            self._log.info('found auxiliary_embedding1')
+            self._log.info('    found auxiliary_embedding1')
         do_aux2 = self._detect_auxiliary('auxiliary_embedding2')
         if do_aux2:
-            self._log.info('found auxiliary_embedding2')
+            self._log.info('    found auxiliary_embedding2')
         if do_aux2 and not do_aux1:
             raise ValueError(
                 'found auxiliary_embedding2 but not auxiliary_embedding1')
 
         # check metadata.yaml file
         self._validate_metadata(do_aux1, do_aux2)
+
+        # check 2019/code directory
+        validate_code(
+            os.path.join(self._submission, 'code'),
+            '2019/code', self._is_open_source, self._log)
 
         # check the submission data
         self._validate_language('english', do_aux1, do_aux2)
@@ -132,9 +133,9 @@ class LanguageValidation:
         self.errors = []
 
     def _get_file(self, name):
-        filename = os.path.realpath(os.path.join(
-            os.path.dirname(__file__), '..',
-            'data', '2019', self._language, '{}_filelist.txt'.format(name)))
+        filename = pkg_resources.resource_filename(
+            pkg_resources.Requirement.parse('zerospeech2020'),
+            f'zerospeech2020/share/2019/{self._language}/{name}_filelist.txt')
 
         if not os.path.isfile(filename):
             raise ValueError(f'file not found: {filename}')
@@ -156,11 +157,11 @@ class LanguageValidation:
                 f'missing file 2019/{self._language}/{root_dir}/{f}')
 
     def _check_embedding(self, directory, files_list):
-        read_zrsc2019.read_all(files_list, directory, False, log=self._log)
+        read_2019_features.read_all(files_list, directory, False, log=self._log)
 
     def _validate_directory(self, directory, exist_list, embedding_list):
         self._log.info(
-            'validating "2019/%s/%s" directory...',
+            'validating 2019/%s/%s directory ...',
             self._language, os.path.basename(directory))
         self._check_exists(directory, exist_list)
         if not self.errors:

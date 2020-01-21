@@ -109,28 +109,54 @@ def validate_code(directory, name, is_open_source, log):
                 f'submission declared open source but empty folder {name}')
 
         log.info(
-            f'    found a non-empty "{name}" directory, it will be manually '
+            f'    non-empty directory, it will be manually '
             f'inspected to confirm the submission is open source')
 
 
-def validate_directory(directory, name, entries, log, all_exist=False):
+def validate_directory(directory, name, entries, log, optional_entries=[]):
+    """Checks if a directory contains the expected entries
+
+    Parameters
+    ----------
+    directory (str) : the directory to check
+
+    name (str) : nickname of the directory to print error messages
+
+    entries (list) : a list of entries (files or directories) that must be
+        fount in the directory
+
+    log (logging.Logger) : to send log messages
+
+    optional_entries (list) : a list of optional entries, may be here but not
+        mandatory
+
+    Returns
+    -------
+    existing (list) : The directory content
+
+    Raises
+    ------
+    ValueError if anything goes wrong
+
+    """
     log.info('validating %s directory ...', name)
 
     if not os.path.isdir(directory):
         raise ValueError(f'{name} directory not found')
 
+    # ensure we have no extra entries
     existing = set(os.listdir(directory))
-    extra = existing - set(entries)
+    extra = existing - (set(entries) | set(optional_entries))
     if extra:
         raise ValueError(
             f'{name} directory contains extra files or directories: '
             f'{", ".join(extra)}')
 
-    if all_exist:
-        missing = set(entries) - existing
-        if missing:
-            raise ValueError(
-                f'{name} directory has missing files or directories: '
-                f'{", ".join(missing)}')
+    # ensure all the required entries are here
+    missing = set(entries) - existing
+    if missing:
+        raise ValueError(
+            f'{name} directory has missing files or directories: '
+            f'{", ".join(missing)}')
 
-    return existing
+    return sorted(existing)
