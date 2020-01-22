@@ -160,3 +160,14 @@ def validate_directory(directory, name, entries, log, optional_entries=[]):
             f'{", ".join(missing)}')
 
     return sorted(existing)
+
+
+def log_errors(log, errors, name, n=20):
+    log.error(f'validation errors for {name}:')
+    for error in errors[:n]:
+        log.error('    %s', error)
+        if len(errors) > n:
+            log.error(f'    ... and {len(errors) - n} more!')
+
+    raise ValueError(
+        f'invalid submission, found {len(errors)} errors in {name}')

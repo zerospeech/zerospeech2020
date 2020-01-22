@@ -8,11 +8,11 @@ import zerospeech2020
 setuptools.setup(
     # general description
     name='zerospeech2020',
-    description="Evaluation and validation tools for the Zero Speech Challenge 2020",
+    description="Evaluation and validation tools for ZeroSpeech2020",
     version=zerospeech2020.__version__,
 
     # python package dependencies
-    install_requires=['pyyaml'],
+    install_requires=['numpy', 'pyyaml'],
     setup_requires=[],
 
     # include Python code and any file in zerospeech2020/share
@@ -22,7 +22,7 @@ setuptools.setup(
 
     # the command-line scripts to export
     entry_points={'console_scripts': [
-        'zerospeech2020-validate = zerospeech2020.validation.validation:main']},
+        'zerospeech2020-validate = zerospeech2020.validation.main:main']},
 
     # metadata
     author='CoML team',

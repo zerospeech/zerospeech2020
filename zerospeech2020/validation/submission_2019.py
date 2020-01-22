@@ -7,7 +7,7 @@ import wave
 
 from zerospeech2020 import read_2019_features
 from zerospeech2020.validation.utils import (
-    validate_code, validate_yaml, validate_directory)
+    validate_code, validate_yaml, validate_directory, log_errors)
 
 
 class Submission2019:
@@ -103,15 +103,7 @@ class Submission2019:
         val.validate(self._submission, do_aux1, do_aux2)
 
         if val.errors:
-            self._log.error(f'Validation errors detected for 2019/{language}:')
-            for error in val.errors[:20]:
-                self._log.error('    %s', error)
-            if len(val.errors) > 20:
-                self._log.error(f'    ... and {len(val.errors) - 20} more!')
-
-            raise ValueError(
-                f'invalid submission, found {len(val.errors)} errors '
-                f'in 2019/{language}')
+            log_errors(self._log, val.errors, f'2019/{language}')
 
 
 class LanguageValidation:
@@ -164,10 +156,11 @@ class LanguageValidation:
 
     def _check_wavs(self, wavs_list):
         # ensure each wav is readable (valid wav header) and is not empty
+        # TODO ensure this is working
         for wav in wavs_list:
             wav = os.path.join(self._submission, wav)
             try:
-                with wave.open(wav_file, 'r') as fwav:
+                with wave.open(wav, 'r') as fwav:
                     duration = fwav.getnframes() / fwav.getframerate()
                     if duration <= 0:
                         self.errors.append(f'wav file is empty: {wav}')
