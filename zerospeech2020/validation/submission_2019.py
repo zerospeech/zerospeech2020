@@ -3,6 +3,7 @@
 import logging
 import os
 import pkg_resources
+import wave
 
 from zerospeech2020 import read_2019_features
 from zerospeech2020.validation.utils import (
@@ -157,15 +158,35 @@ class LanguageValidation:
                 f'missing file 2019/{self._language}/{root_dir}/{f}')
 
     def _check_embedding(self, directory, files_list):
-        read_2019_features.read_all(files_list, directory, False, log=self._log)
+        # ensure each embedding file has the correct format
+        read_2019_features.read_all(
+            files_list, directory, False, log=self._log)
+
+    def _check_wavs(self, wavs_list):
+        # ensure each wav is readable (valid wav header) and is not empty
+        for wav in wavs_list:
+            wav = os.path.join(self._submission, wav)
+            try:
+                with wave.open(wav_file, 'r') as fwav:
+                    duration = fwav.getnframes() / fwav.getframerate()
+                    if duration <= 0:
+                        self.errors.append(f'wav file is empty: {wav}')
+            except wave.Error:
+                self.errors.append(f'cannot read wav file: {wav}')
 
     def _validate_directory(self, directory, exist_list, embedding_list):
         self._log.info(
             'validating 2019/%s/%s directory ...',
             self._language, os.path.basename(directory))
+
         self._check_exists(directory, exist_list)
+
         if not self.errors:
             self._check_embedding(directory, embedding_list)
+
+        if not self.errors:
+            wavs_list = [f for f in open(exist_list) if f.endswith('.wav')]
+            self._check_wavs(wavs_list)
 
     def validate(self, submission, do_aux1, do_aux2):
         self.errors = []
