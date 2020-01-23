@@ -1,0 +1,12 @@
+mandarin/A08.wav
+mandarin/A33.wav
+mandarin/A36.wav
+mandarin/B02.wav
+mandarin/B06.wav
+mandarin/B08.wav
+mandarin/C04.wav
+mandarin/C08.wav
+mandarin/C19.wav
+mandarin/D07.wav
+mandarin/D08.wav
+mandarin/D21.wav

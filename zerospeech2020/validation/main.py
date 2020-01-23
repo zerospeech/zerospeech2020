@@ -21,10 +21,13 @@ def main():
     parser.add_argument(
         'submission',
         help='path to submission (can be a directory or a zip archive)')
+    parser.add_argument(
+        '-j', '--njobs', type=int, default=1,
+        help='number of parallel processes to use for validation')
     args = parser.parse_args()
 
     try:
-        Submission2020(args.submission, log=log).validate()
+        Submission2020(args.submission, njobs=args.njobs, log=log).validate()
         sys.exit(0)
     except ValueError as err:
         log.error(f'fatal error: {err}')

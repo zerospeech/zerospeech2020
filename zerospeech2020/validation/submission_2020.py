@@ -12,8 +12,9 @@ from .utils import validate_directory, validate_yaml
 
 
 class Submission2020:
-    def __init__(self, submission, log=logging.getLogger()):
+    def __init__(self, submission, njobs=1, log=logging.getLogger()):
         self._log = log
+        self._njobs = njobs
 
         # make sure the submission is either a directory or a zip
         self._is_zipfile = zipfile.is_zipfile(submission)
@@ -84,7 +85,7 @@ class Submission2020:
         Submission2017(
             os.path.join(self._submission, '2017'),
             self._is_open_source,
-            log=self._log).validate()
+            njobs=self._njobs, log=self._log).validate()
 
     def _validate_2019(self):
         """Checks if submission for 2019 subset is valid"""

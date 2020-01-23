@@ -1,0 +1,14 @@
+LANG2_01.wav
+LANG2_02.wav
+LANG2_04.wav
+LANG2_07.wav
+LANG2_08.wav
+LANG2_09.wav
+LANG2_11.wav
+LANG2_12.wav
+LANG2_13.wav
+LANG2_14.wav
+LANG2_15.wav
+LANG2_16.wav
+LANG2_17.wav
+LANG2_18.wav

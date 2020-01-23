@@ -1,5 +1,7 @@
 """Utility functions for ZRC2020 validation"""
 
+import itertools
+import joblib
 import os
 import yaml
 
@@ -89,7 +91,7 @@ def validate_code(directory, name, is_open_source, log):
     ValueError if anything goes wrong
 
     """
-    log.info('validating %s directory ...', name)
+    log.info('validating directory %s ...', name)
 
     # if closed source, do not expect the directory to be present, but tolerate
     # an empty directory
@@ -139,7 +141,7 @@ def validate_directory(directory, name, entries, log, optional_entries=[]):
     ValueError if anything goes wrong
 
     """
-    log.info('validating %s directory ...', name)
+    log.info('validating directory %s ...', name)
 
     if not os.path.isdir(directory):
         raise ValueError(f'{name} directory not found')
@@ -163,11 +165,18 @@ def validate_directory(directory, name, entries, log, optional_entries=[]):
 
 
 def log_errors(log, errors, name, n=20):
+    """Log the first errors, a synthesis message and raise a ValueError"""
     log.error(f'validation errors for {name}:')
     for error in errors[:n]:
         log.error('    %s', error)
-        if len(errors) > n:
-            log.error(f'    ... and {len(errors) - n} more!')
+    if len(errors) > n:
+        log.error(f'    ... and {len(errors) - n} more!')
 
     raise ValueError(
         f'invalid submission, found {len(errors)} errors in {name}')
+
+
+def parallelize(function, njobs, args):
+    return list(itertools.chain(
+        *joblib.Parallel(n_jobs=njobs)(
+            joblib.delayed(function)(*arg) for arg in args)))
