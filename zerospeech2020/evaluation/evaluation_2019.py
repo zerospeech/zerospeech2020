@@ -1,8 +1,9 @@
-from read_2019_features import *
-
+from zerospeech2020.read_2019_features import *
+from utils import *
+import logging
 
 class Evaluation2019():
-    def __init__(self, submission
+    def __init__(self, submission,
                  log=logging.getLogger(),
                  task=None):
         self._log = log
@@ -67,7 +68,7 @@ class Evaluation2019():
                 not args.dont_complain_about_missing_files,
                 log=False)
 
-    def evaluate_2019():
+    def evaluate():
         """Run ABX evaluation and bitrate"""
         # compute abx
         feature_folder = os.path.join(self._submission, "2019",

@@ -131,39 +131,52 @@ class Evaluation2017_track2():
 class Evaluation2017_track1():
     def __init__(self, submission,
                  log=logging.getLogger(),
-                 language_choice=None):
+                 language_choice=None,
+                 tasks=None,
+                 n_cpu=1,
+                 normalize=1,
+                 distance="default"):
         self._log = log
-
+        self.distance = distance
+        self.normalize = normalize
+        self.n_cpu = n_cpu
         if not os.path.isdir(submission):
             raise ValueError('2017 submission not found')
-
+        self.tasks = tasks
         self._submission = submission
         if language_choice is not None:
             self.language_choice = language_choice
         else:
             self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
+        self.durations_choice = ["1s", "10s", "120s"]
 
     def _make_temp(self):
         return tempfile.mkdtemp()
     
-    def __del__(self):
-        # delete the temporary folder
-        if self._is_zipfile:
-            shutil.rmtree(self._submission)
+    #def __del__(self):
+    #    # delete the temporary folder
+    #    if self._is_zipfile:
+    #        shutil.rmtree(self._submission)
 
     def evaluate(self):
         """Run ABX evaluation on selected languages, on selected durations"""
-        tasks = self.get_tasks(self.task_folder, "2017")
+       
+        tmp = self._make_temp()
+        self._log.info('temp dir {}'.format(tmp))
+        tasks = get_tasks(self.tasks, "2017")
         for language in self.language_choice:
-            for duration in durations_choice:
+            self._log.info('evaluating {}'.format(language))
+            for duration in self.durations_choice:
                 feature_folder = os.path.join(self._submission, "2017",
                                               "track1", language, duration)
                 task_across = tasks[(language, duration, "across")]
                 task_within = tasks[(language, duration, "within")]
-                print(task_across)
-                print(task_within)
                 if os.path.isdir(feature_folder):
-                    run_abx(features_folder, task, load_feat_2017)
+                    self._log.info('across')
+                    run_abx(feature_folder, task_across, tmp, load_feat_2017, self.n_cpu, self.normalize, 'across')
+                    empty_tmp_dir(tmp)
+                    self._log.info('within')
+                    run_abx(feature_folder, task_within, tmp, load_feat_2017, self.n_cpu, self.normalize, 'within')
                 else:
                     raise ValueError("Trying to evaluate feature that doesn't exist for 2017 corpus, {}, {}".format(language, duration))
 
