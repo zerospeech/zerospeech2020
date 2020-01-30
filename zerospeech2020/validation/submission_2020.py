@@ -45,6 +45,9 @@ class Submission2020:
         except ValueError:
             return False
 
+    def is_open_source(self):
+        return self._is_open_source
+
     def validate(self):
         """Raises a ValueError if the submission is not valid"""
         dir_2017, dir_2019 = self._validate_root()
