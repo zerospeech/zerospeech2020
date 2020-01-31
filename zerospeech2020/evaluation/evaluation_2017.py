@@ -12,22 +12,13 @@ from tdev2.measures.token_type import *
 from tdev2.readers.gold_reader import *
 from tdev2.readers.disc_reader import Disc as Track2Reader
 
-class Evaluation2017:
-    def __init__(self, submission,
-                 njobs=1, log=logging.getLogger()):
-        self._log = log
-        self._njobs = njobs
-
-        if not os.path.isdir(submission):
-            raise ValueError('2017 submission not found')
-        self._submission = submission
-
-
 class Evaluation2017_track2():
     def __init__(self, submission,
                  log=logging.getLogger(),
-                 language_choice=None):
+                 language_choice=None,
+                 output=None):
         self._log = log
+        self.output = output
 
         ## TODO change output ?
 
@@ -62,11 +53,11 @@ class Evaluation2017_track2():
 
         self.disc = Track2Reader(class_file, self.gold)
  
-    def _evaluate_lang(self):
+    def _evaluate_lang(self, output_lang):
         """Compute all metrics on requested language"""
         try:
             self._log.info('Computing Boundary...')
-            boundary = Boundary(self.gold, self.disc, self.output)
+            boundary = Boundary(self.gold, self.disc, output_lang)
             boundary.compute_boundary()
             boundary.write_score()
         except:
@@ -74,7 +65,7 @@ class Evaluation2017_track2():
 
         try:
             self._log.info('Computing Grouping...')
-            grouping = Grouping(self.disc, self.output)
+            grouping = Grouping(self.disc, output_lang)
             grouping.compute_grouping()
             grouping.write_score()
         except:
@@ -82,7 +73,7 @@ class Evaluation2017_track2():
 
         try:
             self._log.info('Computing Token and Type...')
-            token_type = TokenType(self.gold, self.disc, self.output)
+            token_type = TokenType(self.gold, self.disc, output_lang)
             token_type.compute_token_type()
             token_type.write_score()
         except:
@@ -90,7 +81,7 @@ class Evaluation2017_track2():
 
         try:
             self._log.info('Computing Coverage...')
-            coverage = Coverage(self.gold, self.disc, self.output)
+            coverage = Coverage(self.gold, self.disc, output_lang)
             coverage.compute_coverage()
             coverage.write_score()
         except:
@@ -98,7 +89,7 @@ class Evaluation2017_track2():
 
         try:
             self._log.info('Computing ned...')
-            ned = Ned(self.disc, self.output)
+            ned = Ned(self.disc, output_lang)
             ned.compute_ned()
             ned.write_score()
         except:
@@ -119,13 +110,12 @@ class Evaluation2017_track2():
 
             # check if class  file exists and evaluate it
             if os.path.isfile(class_file):
-                self.output = os.path.join(self._submission, "2017",
-                         "track2", language)
+                output_lang = os.path.join(self.output, language)
                 if not os.path.isdir(self.output):
-                    os.makedirs(self.output)
+                    os.makedirs(output_lang)
                 self._read_gold(language)
                 self._read_discovered(class_file, language)
-                self._evaluate_lang()
+                self._evaluate_lang(output_lang)
 
 
 class Evaluation2017_track1():
@@ -135,11 +125,13 @@ class Evaluation2017_track1():
                  tasks=None,
                  n_cpu=1,
                  normalize=1,
-                 distance="default"):
+                 distance="cosine",
+                 output=None):
         self._log = log
         self.distance = distance
         self.normalize = normalize
         self.n_cpu = n_cpu
+        self.output = output
         if not os.path.isdir(submission):
             raise ValueError('2017 submission not found')
         self.tasks = tasks
@@ -161,7 +153,7 @@ class Evaluation2017_track1():
     def evaluate(self):
         """Run ABX evaluation on selected languages, on selected durations"""
        
-        tmp = self._make_temp()
+        tmp = make_temporary()
         self._log.info('temp dir {}'.format(tmp))
         tasks = get_tasks(self.tasks, "2017")
         for language in self.language_choice:
@@ -173,10 +165,15 @@ class Evaluation2017_track1():
                 task_within = tasks[(language, duration, "within")]
                 if os.path.isdir(feature_folder):
                     self._log.info('across')
-                    run_abx(feature_folder, task_across, tmp, load_feat_2017, self.n_cpu, self.normalize, 'across')
+                    ac = run_abx(feature_folder, task_across, tmp,
+                            load_feat_2017, self.n_cpu, self.distance,
+                            self.normalize, 'across')
                     empty_tmp_dir(tmp)
                     self._log.info('within')
-                    run_abx(feature_folder, task_within, tmp, load_feat_2017, self.n_cpu, self.normalize, 'within')
+                    wi = run_abx(feature_folder, task_within, tmp,
+                            load_feat_2017, self.n_cpu, self.distance,
+                            self.normalize, 'within')
+                    write_scores_17(ac, wi, language, duration, output)
                 else:
                     raise ValueError("Trying to evaluate feature that doesn't exist for 2017 corpus, {}, {}".format(language, duration))
 
