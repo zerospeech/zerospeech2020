@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import ipdb
 import time
 import argparse
 import logging
@@ -95,7 +94,7 @@ def main():
                            help='Choose metric for ABX score')
     parser_19.add_argument('-n',
                            '--normalize',
-                           default=1,
+                           default=None,
                            help="choose to normalize DTW distance")
     parser_19.add_argument('task_folder',
                            help='Folder containing the ABX tasks')
@@ -104,6 +103,7 @@ def main():
                            '--language',
                            choices=['english',
                                     'surprise'],
+                           nargs='+',
                            help='choose language to evaluate. If None chosen,'
                            'all will be evaluated')
 
@@ -137,24 +137,27 @@ def main():
     else:
         distance = args.distance
         normalize = args.normalize
-
-
-    #try:
-    Evaluation2020(args.submission, njobs=args.njobs,
-                   output=args.output,
-                   log=log, edition=args.edition,
-                   track=track,
-                   language_choice=args.language,
-                   tasks=args.task_folder,
-                   distance=distance,
-                   normalize=1
-                   ).evaluate()
-    #except ValueError as err:
-    #    log.error(f'fatal error: {err}')
-    #    log.error(
-    #        'please fix the error and try again, '
-    #        'or contact zerospeech2020@gmail.com if you need assistance')
-    #    sys.exit(1)
+    if isinstance(args.language, str):
+        language = [args.language]
+    else:
+        language = args.language
+    
+    try:
+        Evaluation2020(args.submission, njobs=args.njobs,
+                       output=args.output,
+                       log=log, edition=args.edition,
+                       track=track,
+                       language_choice=language,
+                       tasks=args.task_folder,
+                       distance=distance,
+                       normalize=normalize
+                       ).evaluate()
+    except ValueError as err:
+        log.error(f'fatal error: {err}')
+        log.error(
+            'please fix the error and try again, '
+            'or contact zerospeech2020@gmail.com if you need assistance')
+        sys.exit(1)
 
 if __name__ == "__main__": 
     main()

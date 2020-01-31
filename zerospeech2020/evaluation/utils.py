@@ -62,7 +62,7 @@ def run_abx(features_path, task, temp, load, n_cpu,
     """Run ABX pipeline"""
     dist2fun = {'cosine': default_distance,
                 'KL': kl_divergence,
-                'levenshtein': editdistance}
+                'levenshtein': edit_distance}
     # convert
     features = os.path.join(temp, 'features.h5')
     
@@ -110,7 +110,7 @@ def write_scores_17(across, within, language,
 def write_scores_19(abx_score, bitrate_score, language,
                     distance, output):
     out_score = os.path.join(output,
-                  '{}_abx.txt'.format(language))
+                  '{}.txt'.format(language))
     with open(out_score, 'w') as fout:
         fout.write(u'ABX_distance: {}\n'.format(distance))
         fout.write(u'ABX_score: {}\n'.format(abx_score))

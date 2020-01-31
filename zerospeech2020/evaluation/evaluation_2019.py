@@ -103,13 +103,17 @@ class Evaluation2019():
             feat_tmp = make_temporary()
             feature_folder = os.path.join(self._submission, "2019",
                     lang, 'test')
+
+            # check if folder exist, otherise don't evaluate
+            if not os.path.isdir(feature_folder):
+                continue
             self._get_features(feature_folder, feat_tmp)
 
             # Get ABX task
             task = get_tasks(self.task_folder, 2019)[lang]
 
             # Compute ABX score
-            output = os.path.join(self.output, '{}_19'.format(lang))
+            output = os.path.join(self.output)
             if os.path.isdir(feature_folder):
                 abx_score = run_abx(feat_tmp, task, tmp, 
                         load_feat_2019, self.n_cpu, self.distance,
