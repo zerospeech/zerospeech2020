@@ -147,16 +147,9 @@ class Evaluation2017_track1():
         if language_choice is not None:
             self.language_choice = language_choice
         else:
-            self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
+            self.language_choice = ['english', 'french', 'mandarin',
+                                    'LANG1', 'LANG2']
         self.durations_choice = duration
-
-    def _make_temp(self):
-        return tempfile.mkdtemp()
-    
-    #def __del__(self):
-    #    # delete the temporary folder
-    #    if self._is_zipfile:
-    #        shutil.rmtree(self._submission)
 
     def evaluate(self):
         """Run ABX evaluation on selected languages, on selected durations"""
@@ -183,5 +176,7 @@ class Evaluation2017_track1():
                             self.normalize, 'within')
                     write_scores_17(ac, wi, language, duration, output)
                 else:
-                    raise ValueError("Trying to evaluate feature that doesn't exist for 2017 corpus, {}, {}".format(language, duration))
+                    self._log.warning("features for {} {} were not found "
+                            " in \n {}\n Skipping them.".format(
+                                language, duration, feature_folder))
 
