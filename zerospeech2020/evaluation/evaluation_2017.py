@@ -20,8 +20,6 @@ class Evaluation2017_track2():
         self._log = log
         self.output = output
 
-        ## TODO change output ?
-
         if not os.path.isdir(submission):
             raise ValueError('2017 submission not found')
         self._submission = submission
@@ -70,33 +68,40 @@ class Evaluation2017_track2():
             grouping = Grouping(self.disc, output_lang)
             grouping.compute_grouping()
             grouping.write_score()
-        except:
+        except FileNotFoundError as err:
             self._log.warning('Was unable to compute grouping')
+            self._log.warning(f'{err}')
+            self._log.warning('trying other metrics')
 
         try:
             self._log.info('Computing Token and Type...')
             token_type = TokenType(self.gold, self.disc, output_lang)
             token_type.compute_token_type()
             token_type.write_score()
-        except:
-            self._log.warning('Was unable to compute Token/Type')
+        except FileNotFoundError as err:
+            self._log.warning('Was unable to compute token/type')
+            self._log.warning(f'{err}')
+            self._log.warning('trying other metrics')
 
         try:
             self._log.info('Computing Coverage...')
             coverage = Coverage(self.gold, self.disc, output_lang)
             coverage.compute_coverage()
             coverage.write_score()
-        except:
+        except FileNotFoundError as err:
             self._log.warning('Was unable to compute coverage')
+            self._log.warning(f'{err}')
+            self._log.warning('trying other metrics')
 
         try:
             self._log.info('Computing ned...')
             ned = Ned(self.disc, output_lang)
             ned.compute_ned()
             ned.write_score()
-        except:
+        except FileNotFoundError as err:
             self._log.warning('Was unable to compute ned')
-
+            self._log.warning(f'{err}')
+            self._log.warning('trying other metrics')
 
     def evaluate(self):
         """Compute metrics on all languages"""
@@ -106,8 +111,6 @@ class Evaluation2017_track2():
             class_file = os.path.join(self._submission, "2017",
                          "track2",
                          "{}.txt".format(language))
-            self._log.info('evaluating {}'.format(class_file))
-
 
             # check if class  file exists and evaluate it
             if os.path.isfile(class_file):
@@ -130,7 +133,8 @@ class Evaluation2017_track1():
                  n_cpu=1,
                  normalize=1,
                  distance="cosine",
-                 output=None):
+                 output=None,
+                 duration=['1s', '10s', '120s']):
         self._log = log
         self.distance = distance
         self.normalize = normalize
@@ -144,7 +148,7 @@ class Evaluation2017_track1():
             self.language_choice = language_choice
         else:
             self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
-        self.durations_choice = ["1s", "10s", "120s"]
+        self.durations_choice = duration
 
     def _make_temp(self):
         return tempfile.mkdtemp()

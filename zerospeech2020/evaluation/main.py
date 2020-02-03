@@ -65,7 +65,12 @@ def main():
                            default='cosine',
                            choices=['cosine', 'KL'],
                            help='Choose metric for ABX score')
-    parser_17.add_argument('-n',
+    track1_17.add_argument('-dr',
+                           '--duration',
+                           choices=['1s', '10s', '120s'],
+                           default=['1s', '10s', '120s'],
+                           help='Evaluate only one subset of test set')
+    track1_17.add_argument('-n',
                            '--normalize',
                            default=1,
                            help="choose to normalize DTW distance")
@@ -124,6 +129,8 @@ def main():
 
 
     args = parser.parse_args()
+
+    # Default values and subparsers
     if 'track' in args:
         track = args.track
     else:
@@ -141,16 +148,30 @@ def main():
         language = [args.language]
     else:
         language = args.language
-    
+    if 'duration' in args:
+        if isinstance(args.duration, str):
+            duration = [args.duration]
+        else:
+            duration = args.duration
+    else:
+        duration = ['1s', '10s', '120s']
+
+    if 'task_folder' in args:
+        task_folder = args.task_folder
+    else:
+        task_folder = None
+
+    # launch evaluation
     try:
         Evaluation2020(args.submission, njobs=args.njobs,
                        output=args.output,
                        log=log, edition=args.edition,
                        track=track,
                        language_choice=language,
-                       tasks=args.task_folder,
+                       tasks=task_folder,
                        distance=distance,
-                       normalize=normalize
+                       normalize=normalize,
+                       duration=duration
                        ).evaluate()
     except ValueError as err:
         log.error(f'fatal error: {err}')

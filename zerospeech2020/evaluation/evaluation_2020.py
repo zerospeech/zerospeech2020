@@ -15,7 +15,8 @@ class Evaluation2020:
                  edition=None,
                  track=None, language_choice=None,
                  tasks=None, distance="default",
-                 normalize=1):
+                 normalize=1,
+                 duration=['1s', '10s', '120s']):
         self._log = log
         self.edition = edition
         self.njobs = njobs
@@ -24,6 +25,7 @@ class Evaluation2020:
         self.track = track
         self.tasks = tasks
         self.normalize = normalize
+        self.duration = duration
 
         # set distances for 17 and 19
         if edition == "both":
@@ -58,7 +60,8 @@ class Evaluation2020:
                  self.njobs,
                  self.normalize,
                  self.distance17,
-                 self.output).evaluate()
+                 self.output,
+                 self.duration).evaluate()
         if (self.edition == '2019' or self.edition == 'both'):
             Evaluation2019(self._submission,
                  self._log,
@@ -70,8 +73,6 @@ class Evaluation2020:
                  self.output).evaluate()
 
     def _evaluate_tde(self):
-        self._log.info('evaluating track2')
-
         Evaluation2017_track2(self._submission,
                  self._log,
                  self.language_choice,
