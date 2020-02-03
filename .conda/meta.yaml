@@ -1,0 +1,45 @@
+# Build the shennong conda package. Run with "conda build . -c coml"
+
+{% set name = 'zerospeech2020' %}
+{% set data = load_setup_py_data() %}
+
+package:
+  name: {{ name }}
+  version: {{ data.get('version') }}
+
+source:
+  path: ..
+
+build:
+  script:
+    - conda install -c coml tde abx -y
+    - python setup.py build
+    - python setup.py install
+
+requirements:
+    build:
+      - python {{ python }}
+      - numpy
+      - pyyaml
+      - joblib
+
+    run:
+      - python {{ python }}
+      - numpy
+      - pyyaml
+      - joblib
+
+test:
+  imports:
+    - zerospeech2020
+  requires:
+    - pytest>=2.6
+  source_files:
+    - test
+
+about:
+  home: {{ data.get('url') }}
+  license: {{ data.get('license') }}
+  summary: {{ data.get('description') }}
+
+ 
