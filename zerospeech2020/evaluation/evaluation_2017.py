@@ -60,8 +60,10 @@ class Evaluation2017_track2():
             boundary = Boundary(self.gold, self.disc, output_lang)
             boundary.compute_boundary()
             boundary.write_score()
-        except:
+        except FileNotFoundError as err:
             self._log.warning('Was unable to compute boundary')
+            self._log.warning(f'{err}')
+            self._log.warning('trying other metrics')
 
         try:
             self._log.info('Computing Grouping...')
@@ -99,7 +101,6 @@ class Evaluation2017_track2():
     def evaluate(self):
         """Compute metrics on all languages"""
         self._log.info('evaluating track2')
-        self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
 
         for language in self.language_choice:
             class_file = os.path.join(self._submission, "2017",
@@ -111,11 +112,14 @@ class Evaluation2017_track2():
             # check if class  file exists and evaluate it
             if os.path.isfile(class_file):
                 output_lang = os.path.join(self.output, language)
-                if not os.path.isdir(self.output):
+                if not os.path.isdir(output_lang):
                     os.makedirs(output_lang)
                 self._read_gold(language)
                 self._read_discovered(class_file, language)
                 self._evaluate_lang(output_lang)
+            else:
+                self._log.warning('{} does not exist,'
+                        ' skipping evaluation'.format(class_file))
 
 
 class Evaluation2017_track1():
