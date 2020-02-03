@@ -6,7 +6,7 @@ import os
 import pkg_resources
 import sys
 
-from WDE.readers.disc_reader import Disc as Track2Reader
+from tdev2.readers.disc_reader import Disc as Track2Reader
 from zerospeech2020.validation.utils import (
     validate_code, validate_yaml, validate_directory, log_errors, parallelize)
 
