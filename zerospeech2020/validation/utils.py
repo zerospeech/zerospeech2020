@@ -49,7 +49,7 @@ def validate_yaml(filename, name, entries, optional_entries={}):
     except AttributeError:  # yaml can load string only
         raise ValueError(f'failed to parse {name}')
 
-    missing = [e for e in mandatory if e not in mandatory]
+    missing = [e for e in mandatory if e not in existing]
     if missing:
         raise ValueError(
             f'the following {name} entries are missing: {", ".join(missing)}')
