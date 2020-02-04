@@ -64,8 +64,8 @@ class Submission2017:
             '2017/metadata.yaml',
             {'system description': str,
              'hyperparameters': None,
-             'track1_supervised': bool,
-             'track2_supervised': bool})
+             'track1 supervised': bool,
+             'track2 supervised': bool})
 
     def _validate_track1(self):
         # ensure each submitted lang is valid
