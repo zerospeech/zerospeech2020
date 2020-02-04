@@ -1,4 +1,4 @@
-# Build the shennong conda package. Run with "conda build . -c coml"
+# Build the zerospeech2020 conda package. Run with "conda build ."
 
 {% set name = 'zerospeech2020' %}
 {% set data = load_setup_py_data() %}
@@ -12,7 +12,7 @@ source:
 
 build:
   script:
-    - conda install -c coml tde abx -y
+    - conda install -c coml tde abx=0.4.3 -y
     - python setup.py build
     - python setup.py install
 
@@ -29,17 +29,7 @@ requirements:
       - pyyaml
       - joblib
 
-test:
-  imports:
-    - zerospeech2020
-  requires:
-    - pytest>=2.6
-  source_files:
-    - test
-
 about:
   home: {{ data.get('url') }}
   license: {{ data.get('license') }}
   summary: {{ data.get('description') }}
-
- 
