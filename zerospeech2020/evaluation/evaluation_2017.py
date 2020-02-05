@@ -31,6 +31,9 @@ class Evaluation2017_track2():
         else:
             self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
 
+        # output scores in json format for docker
+        self.track2 = dict()
+
     def _read_gold(self, language):
         self._log.info('reading track2 '
                        'gold for {}'.format(language))
@@ -53,10 +56,15 @@ class Evaluation2017_track2():
  
     def _evaluate_lang(self, output_lang):
         """Compute all metrics on requested language"""
+        details = dict()
+
         try:
             self._log.info('Computing Boundary...')
             boundary = Boundary(self.gold, self.disc, output_lang)
             boundary.compute_boundary()
+            details['boundary_precision'] = boundary.precision
+            details['boundary_recall'] = boundary.recall
+            details['boundary_fscore'] = boundary.fscore
             boundary.write_score()
         except FileNotFoundError as err:
             self._log.warning('Was unable to compute boundary')
@@ -67,6 +75,9 @@ class Evaluation2017_track2():
             self._log.info('Computing Grouping...')
             grouping = Grouping(self.disc, output_lang)
             grouping.compute_grouping()
+            details['grouping_precision'] = grouping.precision
+            details['grouping_recall'] = grouping.recall
+            details['grouping_fscore'] = grouping.fscore
             grouping.write_score()
         except FileNotFoundError as err:
             self._log.warning('Was unable to compute grouping')
@@ -77,6 +88,10 @@ class Evaluation2017_track2():
             self._log.info('Computing Token and Type...')
             token_type = TokenType(self.gold, self.disc, output_lang)
             token_type.compute_token_type()
+            details['token_precision'], details['type_precision'] = token_type.precision
+            details['token_recall'], details['type_recall'] = token_type.recall
+            details['token_fscore'], details['type_fscore'] = token_type.fscore
+            details['words'] = len(token_type.type_seen)
             token_type.write_score()
         except FileNotFoundError as err:
             self._log.warning('Was unable to compute token/type')
@@ -87,6 +102,7 @@ class Evaluation2017_track2():
             self._log.info('Computing Coverage...')
             coverage = Coverage(self.gold, self.disc, output_lang)
             coverage.compute_coverage()
+            details['coverage'] = coverage.coverage
             coverage.write_score()
         except FileNotFoundError as err:
             self._log.warning('Was unable to compute coverage')
@@ -97,16 +113,20 @@ class Evaluation2017_track2():
             self._log.info('Computing ned...')
             ned = Ned(self.disc, output_lang)
             ned.compute_ned()
+            details['ned'] = ned.ned
+            details['pairs'] = ned.n_pairs
             ned.write_score()
         except FileNotFoundError as err:
             self._log.warning('Was unable to compute ned')
             self._log.warning(f'{err}')
             self._log.warning('trying other metrics')
+        return ned.ned, coverage.coverage, details
 
     def evaluate(self):
         """Compute metrics on all languages"""
         self._log.info('evaluating track2')
 
+        scores = dict()
         for language in self.language_choice:
             class_file = os.path.join(self._submission, "2017",
                          "track2",
@@ -119,10 +139,19 @@ class Evaluation2017_track2():
                     os.makedirs(output_lang)
                 self._read_gold(language)
                 self._read_discovered(class_file, language)
-                self._evaluate_lang(output_lang)
+                ned, coverage, details = self._evaluate_lang(output_lang)
+                
+                scores['{}_ned'.format(language)] = ned
+                scores['{}_coverage'.format(language)] = coverage
+                scores['{}_words'.format(language)] = details['words']
+                self.track2['details_{}'.format(language)] = details
+
+
             else:
                 self._log.warning('{} does not exist,'
                         ' skipping evaluation'.format(class_file))
+        self.track2['scores'] = scores
+        return self.track2
 
 
 class Evaluation2017_track1():
@@ -149,11 +178,16 @@ class Evaluation2017_track1():
         else:
             self.language_choice = ['english', 'french', 'mandarin',
                                     'LANG1', 'LANG2']
+        self.scores = dict()
         self.durations_choice = duration
 
     def evaluate(self):
         """Run ABX evaluation on selected languages, on selected durations"""
        
+        across = dict()
+        within = dict()
+
+        # make temporary directory
         tmp = make_temporary()
         self._log.info('temp dir {}'.format(tmp))
         tasks = get_tasks(self.tasks, "2017")
@@ -165,18 +199,27 @@ class Evaluation2017_track1():
                 task_across = tasks[(language, duration, "across")]
                 task_within = tasks[(language, duration, "within")]
                 if os.path.isdir(feature_folder):
+                    
+                    # compute abx across score
                     self._log.info('across')
                     ac = run_abx(feature_folder, task_across, tmp,
                             load_feat_2017, self.n_cpu, self.distance,
                             self.normalize, 'across')
-                    empty_tmp_dir(tmp)
+                    across['{}_{}'.format(language, duration)] = ac
+
+                    # compute abx within score
                     self._log.info('within')
                     wi = run_abx(feature_folder, task_within, tmp,
                             load_feat_2017, self.n_cpu, self.distance,
                             self.normalize, 'within')
-                    write_scores_17(ac, wi, language, duration, output)
+                    within['{}_{}'.format(language, duration)] = wi
+                    write_scores_17(ac, wi, language, duration, self.output)
+                    empty_tmp_dir(tmp)
+
                 else:
                     self._log.warning("features for {} {} were not found "
                             " in \n {}\n Skipping them.".format(
                                 language, duration, feature_folder))
-
+        self.scores['within'] = within
+        self.scores['across'] = across
+        return self.scores

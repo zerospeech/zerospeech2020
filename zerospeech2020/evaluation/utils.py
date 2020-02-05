@@ -12,23 +12,30 @@ from ABXpy.analyze import analyze
 from ABXpy.distances import distances
 from ABXpy.distance import default_distance, edit_distance
 from ABXpy.distances.metrics.kullback_leibler import kl_divergence
+
+
 def make_temporary():
+    """ Create temporary folder for ABX files"""
     return tempfile.mkdtemp()
 
 def empty_tmp_dir(tmp):
-
+    """ Remove ABX files from temporary folder"""
     for fn in os.listdir(tmp):
         file_path = os.path.join(tmp, fn)
-        print(file_path)
         try:
-            print('removing {}'.format(file_path))
             os.remove(file_path)
-            print('removed {}'.format(file_path))
         except:
             pass
 
 def abx_average(filename, task_type):
-    """Return ABX Error Rate"""
+    """ Compute ABX averaged score from ABX analyze file.
+        To compute average, first average on context, then average on
+        speaker, and finally average on phone.
+
+        Output
+        average - error rate between 0 and 100 - the lower the better
+        
+    """
     df = pandas.read_csv(filename, sep='\t')
     if task_type == 'across':
         # aggregate on context
@@ -59,7 +66,20 @@ def abx_average(filename, task_type):
 
 def run_abx(features_path, task, temp, load, n_cpu,
         distance, normalized, task_type):
-    """Run ABX pipeline"""
+    """ Run ABX pipeline
+        Input
+        features_path: folder containing features
+        task :         path to ABX task file
+        temp:          temporary folder to store ABX files
+        load:          function to load the features
+        n_cpu:         number of cpus to use
+        distance:      name of the distance to use
+        normalized:    choose to normalize or not DTW distance
+        task_type:     specify if task is across or within
+
+        Output
+        abx_score:     ABX error rate
+    """
     dist2fun = {'cosine': default_distance,
                 'KL': kl_divergence,
                 'levenshtein': edit_distance}
@@ -102,10 +122,10 @@ def run_abx(features_path, task, temp, load, n_cpu,
 def write_scores_17(across, within, language,
                 duration, output):
     out_score = os.path.join(output,
-                  '{}_{}_abx.txt')
+                  '{}_{}_abx.txt'.format(language, duration))
     with open(out_score, 'w') as fout:
         fout.write(u'across: {}\n'.format(across))
-        fout.write(u'within: {]\n'.format(within))
+        fout.write(u'within: {}\n'.format(within))
 
 def write_scores_19(abx_score, bitrate_score, language,
                     distance, output):
