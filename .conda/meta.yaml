@@ -22,12 +22,14 @@ requirements:
       - numpy
       - pyyaml
       - joblib
+      - psutil
 
     run:
       - python {{ python }}
       - numpy
       - pyyaml
       - joblib
+      - psutil
 
 about:
   home: {{ data.get('url') }}

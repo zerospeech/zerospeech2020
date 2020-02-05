@@ -12,7 +12,7 @@ setuptools.setup(
     version=zerospeech2020.__version__,
 
     # python package dependencies
-    install_requires=['numpy', 'pyyaml', 'joblib'],
+    install_requires=['numpy', 'pyyaml', 'joblib', 'psutil'],
     setup_requires=[],
 
     # include Python code and any file in zerospeech2020/share
