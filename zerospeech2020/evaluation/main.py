@@ -99,7 +99,7 @@ def main():
                            help='Choose metric for ABX score')
     parser_19.add_argument('-n',
                            '--normalize',
-                           default=None,
+                           default=1,
                            help="choose to normalize DTW distance")
     parser_19.add_argument('task_folder',
                            help='Folder containing the ABX tasks')
