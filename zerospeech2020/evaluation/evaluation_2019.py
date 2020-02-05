@@ -21,6 +21,7 @@ class Evaluation2019():
         self.output = output
         self.distance = distance
         self.normalize = normalize
+        self.all_distances = ['cosine', 'KL', 'levenshtein']
 
         if not os.path.isdir(submission):
             raise ValueError('2017 submission not found')
@@ -31,7 +32,7 @@ class Evaluation2019():
         else:
             raise ValueError("No ABX task folder given, can't compute ABX")
         
-        #self.all_languages = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
+        self.scores = dict()
 
     @staticmethod
     def _entropy_symbols(n_lines, symbol_counts):
@@ -93,40 +94,62 @@ class Evaluation2019():
 
     def evaluate(self):
         """Run ABX evaluation and bitrate"""
+        details_abx = dict()
+        details_bitrate = dict()
+
         # compute abx
         for lang in self.language:
 
             # Create temp folder for intermediary ABX files
             tmp = make_temporary()
+            
+            # extract auxiliary if they exist
+            for folder in ['test', 'auxiliary1', 'auxiliary2']:
 
-            # Create temp folder for features
-            feat_tmp = make_temporary()
-            feature_folder = os.path.join(self._submission, "2019",
-                    lang, 'test')
+                # Create temp folder for features
+                feat_tmp = make_temporary()
+                feature_folder = os.path.join(self._submission, "2019",
+                        lang, folder)
 
-            # check if folder exist, otherise don't evaluate
-            if not os.path.isdir(feature_folder):
-                continue
-            self._get_features(feature_folder, feat_tmp)
+                # check if folder exist, otherise don't evaluate
+                if not os.path.isdir(feature_folder):
+                    continue
+                self._get_features(feature_folder, feat_tmp)
 
-            # Get ABX task
-            task = get_tasks(self.task_folder, 2019)[lang]
+                # Get ABX task
+                task = get_tasks(self.task_folder, 2019)[lang]
 
-            # Compute ABX score
-            output = os.path.join(self.output)
-            if os.path.isdir(feature_folder):
-                abx_score = run_abx(feat_tmp, task, tmp, 
-                        load_feat_2019, self.n_cpu, self.distance,
-                        self.normalize,'across')
+                # Compute ABX score
+                output = os.path.join(self.output)
+                if os.path.isdir(feature_folder):
+                    for distance_fun in self.all_distances:
+                        if distance_fun == "cosine":
+                            normalize = self.normalize
+                        else:
+                            normalize = None
+                        print(folder)
+                        print(distance_fun)
+                        abx_score = run_abx(feat_tmp, task, tmp, 
+                                load_feat_2019, self.n_cpu, distance_fun,
+                                normalize,'across')
+                        empty_tmp_dir(tmp)
 
-            else:
-                raise ValueError("Trying to evaluate feature that"
-                                 " doesn't exist for 2019 corpus")
-            bitrate_file_list = pkg_resources.resource_filename(
-                pkg_resources.Requirement.parse('zerospeech2020'),
-                f'zerospeech2020/share/2019/{lang}/bitrate_filelist.txt')
+                        details_abx['{}_{}_abx_{}'.format(lang, folder,
+                            distance_fun)] = abx_score
+                else:
+                    raise ValueError("Trying to evaluate feature that"
+                                     " doesn't exist for 2019 corpus")
+                bitrate_file_list = pkg_resources.resource_filename(
+                    pkg_resources.Requirement.parse('zerospeech2020'),
+                    f'zerospeech2020/share/2019/{lang}/bitrate_filelist.txt')
 
-            bitrate_score = self.bitrate(feat_tmp, bitrate_file_list)
-            write_scores_19(abx_score, bitrate_score, lang, self.distance,
-                            output)
+                bitrate_score = self.bitrate(feat_tmp, bitrate_file_list)
+                details_bitrate['{}_{}_bitrate'.format(lang,
+                    folder)] = bitrate_score
+                write_scores_19(abx_score, bitrate_score, lang, self.distance,
+                                output)
+            self.scores['{}_abx'.format(lang)] = details_abx['{}_test_abx_{}'.format(
+                lang, self.distance)]
+            self.scores['{}_bitrate'.format(lang)] = details_bitrate['{}_test_bitrate'.format(lang)]
+        return self.scores, details_abx, details_bitrate
 
