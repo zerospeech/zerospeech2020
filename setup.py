@@ -17,7 +17,11 @@ setuptools.setup(
 
     # include Python code and any file in zerospeech2020/share
     packages=setuptools.find_packages(),
-    package_data={'zerospeech2020': ['share/*']},
+    package_data={'zerospeech2020': [
+        'share/2017/track1/*',
+        'share/2017/track2/*',
+        'share/2019/english/*',
+        'share/2019/surprise/*']},
     zip_safe=True,
 
     # the command-line scripts to export
@@ -31,5 +35,5 @@ setuptools.setup(
     url='https://zerospeech.com/2020',
     long_description=codecs.open('README.md', encoding='utf-8').read(),
     long_description_content_type="text/markdown",
-    python_requires='>=3.6',
+    python_requires='>=3.7',
 )

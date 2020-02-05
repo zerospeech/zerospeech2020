@@ -63,7 +63,9 @@ class Submission2017:
             os.path.join(self._submission, 'metadata.yaml'),
             '2017/metadata.yaml',
             {'system description': str,
-             'hyperparameters': None})
+             'hyperparameters': None,
+             'track1 supervised': bool,
+             'track2 supervised': bool})
 
     def _validate_track1(self):
         # ensure each submitted lang is valid
