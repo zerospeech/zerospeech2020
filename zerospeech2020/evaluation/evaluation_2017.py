@@ -31,8 +31,6 @@ class Evaluation2017_track2():
         else:
             self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
 
-        # output scores in json format for docker
-        self.track2 = dict()
 
     def _read_gold(self, language):
         self._log.info('reading track2 '
@@ -125,7 +123,7 @@ class Evaluation2017_track2():
     def evaluate(self):
         """Compute metrics on all languages"""
         self._log.info('evaluating track2')
-
+        track2 = dict()
         scores = dict()
         for language in self.language_choice:
             class_file = os.path.join(self._submission, "2017",
@@ -144,14 +142,14 @@ class Evaluation2017_track2():
                 scores['{}_ned'.format(language)] = ned
                 scores['{}_coverage'.format(language)] = coverage
                 scores['{}_words'.format(language)] = details['words']
-                self.track2['details_{}'.format(language)] = details
+                track2['details_{}'.format(language)] = details
 
 
             else:
                 self._log.warning('{} does not exist,'
                         ' skipping evaluation'.format(class_file))
-        self.track2['scores'] = scores
-        return self.track2
+        track2['scores'] = scores
+        return track2
 
 
 class Evaluation2017_track1():
@@ -178,12 +176,11 @@ class Evaluation2017_track1():
         else:
             self.language_choice = ['english', 'french', 'mandarin',
                                     'LANG1', 'LANG2']
-        self.scores = dict()
         self.durations_choice = duration
 
     def evaluate(self):
         """Run ABX evaluation on selected languages, on selected durations"""
-       
+        track1 = dict() 
         across = dict()
         within = dict()
 
@@ -204,14 +201,14 @@ class Evaluation2017_track1():
                     self._log.info('across')
                     ac = run_abx(feature_folder, task_across, tmp,
                             load_feat_2017, self.n_cpu, self.distance,
-                            self.normalize, 'across')
+                            self.normalize, 'across', self._log)
                     across['{}_{}'.format(language, duration)] = ac
 
                     # compute abx within score
                     self._log.info('within')
                     wi = run_abx(feature_folder, task_within, tmp,
                             load_feat_2017, self.n_cpu, self.distance,
-                            self.normalize, 'within')
+                            self.normalize, 'within', self._log)
                     within['{}_{}'.format(language, duration)] = wi
                     write_scores_17(ac, wi, language, duration, self.output)
                     empty_tmp_dir(tmp)
@@ -220,6 +217,6 @@ class Evaluation2017_track1():
                     self._log.warning("features for {} {} were not found "
                             " in \n {}\n Skipping them.".format(
                                 language, duration, feature_folder))
-        self.scores['within'] = within
-        self.scores['across'] = across
-        return self.scores
+        track1['within'] = within
+        track1['across'] = across
+        return track1
