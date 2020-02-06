@@ -34,11 +34,7 @@ and install it::
 
 ## Usage
 
-`zerospeech2020` provides 3 command-line tools:
-
-* `zerospeech2020-download` which downloads and unzips the dataset archives
-  (registration to the challenge required to get the password, see
-  [here](https://zerospeech.com/2020/getting_started.html)).
+`zerospeech2020` provides 2 command-line tools:
 
 * `zerospeech2020-validate` which validates a submission, ensuring all the
   required files are here and correctly formatted.
