@@ -47,13 +47,15 @@ class Evaluation2020:
 
     def _evaluate_abx(self):
         # launch ABX evaluation on existing folders
+        results_2017 = dict()
+        results_2019 = dict()
         existing = validate_directory(
             self._submission, 'top-level',
             ['metadata.yaml'], self._log, optional_entries=['2017', '2019'])
         if (
                 self.edition == '2017' 
                 or self.edition == 'both')  and self.track == 'track1':
-            Evaluation2017_track1(self._submission,
+            results_2017 = Evaluation2017_track1(self._submission,
                  self._log,
                  self.language_choice,
                  self.tasks,
@@ -63,7 +65,7 @@ class Evaluation2020:
                  self.output,
                  self.duration).evaluate()
         if (self.edition == '2019' or self.edition == 'both'):
-            Evaluation2019(self._submission,
+            results_2019 = Evaluation2019(self._submission,
                  self._log,
                  self.tasks,
                  self.language_choice,
@@ -71,16 +73,18 @@ class Evaluation2020:
                  self.normalize,
                  self.distance19,
                  self.output).evaluate()
+        return results_2017, results_2019
 
     def _evaluate_tde(self):
-        Evaluation2017_track2(self._submission,
+        results_2017 = Evaluation2017_track2(self._submission,
                  self._log,
                  self.language_choice,
                  self.output).evaluate()
+        return results_2017
 
     def evaluate(self):
         if self.track == "track2":
-            self._evaluate_tde()
+            return self._evaluate_tde()
         if self.track == "track1" or self.edition == "2019":
-            self._evaluate_abx()
+            return self._evaluate_abx()
 

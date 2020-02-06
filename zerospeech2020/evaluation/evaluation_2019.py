@@ -32,7 +32,6 @@ class Evaluation2019():
         else:
             raise ValueError("No ABX task folder given, can't compute ABX")
         
-        self.scores = dict()
 
     @staticmethod
     def _entropy_symbols(n_lines, symbol_counts):
@@ -96,7 +95,8 @@ class Evaluation2019():
         """Run ABX evaluation and bitrate"""
         details_abx = dict()
         details_bitrate = dict()
-
+        scores = dict()
+        results_2019 = dict()
         # compute abx
         for lang in self.language:
 
@@ -131,7 +131,7 @@ class Evaluation2019():
                         print(distance_fun)
                         abx_score = run_abx(feat_tmp, task, tmp, 
                                 load_feat_2019, self.n_cpu, distance_fun,
-                                normalize,'across')
+                                normalize,'across', self._log)
                         empty_tmp_dir(tmp)
 
                         details_abx['{}_{}_abx_{}'.format(lang, folder,
@@ -148,8 +148,11 @@ class Evaluation2019():
                     folder)] = bitrate_score
                 write_scores_19(abx_score, bitrate_score, lang, self.distance,
                                 output)
-            self.scores['{}_abx'.format(lang)] = details_abx['{}_test_abx_{}'.format(
+            scores['{}_abx'.format(lang)] = details_abx['{}_test_abx_{}'.format(
                 lang, self.distance)]
-            self.scores['{}_bitrate'.format(lang)] = details_bitrate['{}_test_bitrate'.format(lang)]
-        return self.scores, details_abx, details_bitrate
+            scores['{}_bitrate'.format(lang)] = details_bitrate['{}_test_bitrate'.format(lang)]
+        results_2019['scores'] = scores
+        results_2019['details_bitrate'] = details_bitrate
+        results_2019['details_abx'] = details_abx
+        return results_2019
 

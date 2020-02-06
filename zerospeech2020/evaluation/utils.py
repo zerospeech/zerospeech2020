@@ -2,10 +2,13 @@
 import os
 import pandas
 import argparse
+import logging
 import ast
 import tempfile
 import shutil
 import numpy as np
+import sys
+
 from ABXpy.misc.any2h5features import *
 from ABXpy.score import score
 from ABXpy.analyze import analyze
@@ -64,7 +67,7 @@ def abx_average(filename, task_type):
     return (average)
 
 def run_abx(features_path, task, temp, load, n_cpu,
-        distance, normalized, task_type):
+        distance, normalized, task_type, log=logging.getLogger()):
     """ Run ABX pipeline
         Input
         features_path: folder containing features
@@ -86,15 +89,18 @@ def run_abx(features_path, task, temp, load, n_cpu,
     features = os.path.join(temp, 'features.h5')
     
     if not os.path.isfile(features):
-        print('converting features')
+        log.info('converting features')
         convert(features_path, 
             h5_filename=features, 
             load=load)
     else:
-        print('not converting')
+        log.info('not converting')
     # distance
     # switch depending on distances
-    print('computing distance')
+    log.info('computing distance')
+
+    # ABX Distances prints some messages we do not want to display
+    sys.stdout = open(os.devnull, 'w')
     distance_file = os.path.join(temp, 'distance_{}.h5'.format(task_type))
     distances.compute_distances(features,
                                 'features', 
@@ -103,6 +109,8 @@ def run_abx(features_path, task, temp, load, n_cpu,
                                 dist2fun[distance],
                                 normalized,
                                 n_cpu = n_cpu)
+    sys.stdout = sys.__stdout__
+
     # score
     score_file = os.path.join(temp, 'score_{}.h5'.format(task_type))
     score(task,
