@@ -78,19 +78,8 @@ class Submission2017:
         all_languages = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
         languages = validate_directory(
             os.path.join(self._submission, track),
-            f'2017/{track}', [], self._log,
-            optional_entries=[l + suffix for l in all_languages])
+            f'2017/{track}', [l + suffix for l in all_languages], self._log)
         languages = [l.replace(suffix, '') for l in languages]
-        if not languages:
-            raise ValueError(f'directory 2017/{track} is empty')
-
-        missing = set(all_languages) - set(languages)
-        if missing:
-            self._log.warning(
-                f'    missing optional languages for 2017/{track}: {missing}')
-        else:
-            self._log.info(
-                f'    found all the 5 languages {", ".join(all_languages)}')
 
         return languages
 
