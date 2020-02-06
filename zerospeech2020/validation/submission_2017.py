@@ -128,6 +128,7 @@ class Submission2017:
             errors.append(
                 f'bad format for file '
                 f'2017/track1/{lang}/{duration}/{filename}')
+            return errors
 
         # ensure timestamps are valid
         t0 = array[:-1, 0]
