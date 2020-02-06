@@ -152,16 +152,23 @@ def validate_directory(directory, name, entries, log, optional_entries=[]):
     if extra:
         raise ValueError(
             f'{name} directory contains extra files or directories: '
-            f'{", ".join(extra)}')
+            f'{resume(extra)}')
 
     # ensure all the required entries are here
     missing = set(entries) - existing
     if missing:
         raise ValueError(
             f'{name} directory has missing files or directories: '
-            f'{", ".join(missing)}')
+            f'{resume(missing)}')
 
     return sorted(existing)
+
+
+def resume(sequence, n=10):
+    sequence = sorted(sequence)
+    if len(sequence) > n:
+        return ', '.join(sequence[:n]) + f' ... and {len(sequence) - n} more!'
+    return ', '.join(sequence)
 
 
 def log_errors(log, errors, name, n=20):
