@@ -74,6 +74,7 @@ class Submission2019:
         entries = {
             'abx distance': str,
             'system description': str,
+            'hyperparameters': None,
             'using parallel train': bool,
             'using external data': bool}
         optional_entries = {}
