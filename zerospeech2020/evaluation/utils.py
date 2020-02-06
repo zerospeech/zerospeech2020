@@ -10,7 +10,7 @@ from ABXpy.misc.any2h5features import *
 from ABXpy.score import score
 from ABXpy.analyze import analyze
 from ABXpy.distances import distances
-from ABXpy.distance import default_distance, edit_distance, dtw_kl
+from ABXpy.distance import default_distance, edit_distance, dtw_kl_distance
 
 
 def make_temporary():
@@ -80,7 +80,7 @@ def run_abx(features_path, task, temp, load, n_cpu,
         abx_score:     ABX error rate
     """
     dist2fun = {'cosine': default_distance,
-                'KL': dtw_kl,
+                'KL': dtw_kl_distance,
                 'levenshtein': edit_distance}
     # convert
     features = os.path.join(temp, 'features.h5')
