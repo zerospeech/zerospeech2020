@@ -11,8 +11,11 @@ source:
   path: ..
 
 build:
+  entry_points:
+  {% for entry in data.get('entry_points')['console_scripts'] %}
+    - {{ entry }}
+  {% endfor %}
   script:
-    - conda install -c coml tde abx=0.4.3 -y
     - python setup.py build
     - python setup.py install
 
@@ -23,6 +26,8 @@ requirements:
       - pyyaml
       - joblib
       - psutil
+      - abx
+      - tde
 
     run:
       - python {{ python }}
@@ -30,6 +35,8 @@ requirements:
       - pyyaml
       - joblib
       - psutil
+      - abx
+      - tde
 
 about:
   home: {{ data.get('url') }}

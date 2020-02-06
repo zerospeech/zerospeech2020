@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-import time
+
 import argparse
 import logging
 import sys
-from evaluation_2020 import Evaluation2020
-#from .evaluation_2017 import Evaluation2017_track1 
-#from .evaluation_2019 import *
+from zerospeech2020.evaluation.evaluation_2020 import Evaluation2020
+# from zerospeech2020.evaluation.evaluation_2017 import Evaluation2017_track1
+# from zerospeech2020.evaluation.evaluation_2019 import *
 
 # setup logging
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 log = logging.getLogger()
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -22,7 +23,8 @@ def main():
     parser.add_argument(
         'output',
         help="path to the output folder. If doesn't exist, will be created")
-    parser.add_argument('-j',
+    parser.add_argument(
+        '-j',
         '--njobs',
         type=int,
         default=1,
@@ -40,7 +42,7 @@ def main():
     parser_19 = subparser.add_parser('2019')
     parser_all = subparser.add_parser('both')
 
-    # if 2017 edition chosen 
+    # if 2017 edition chosen
     parser_17.add_argument('-l',
                            '--language',
                            choices=['english',
@@ -51,13 +53,14 @@ def main():
                            help='Choose language to evaluate. If None chosen, '
                                 'all will be evaluated')
 
-    subparser_17 = parser_17.add_subparsers(help='Choose which track of the '
-                                       '2017 Challenge you want to evaluate.'
-                                       'Choices are \n'
-                                       'track1, track2\n'
-                                       'if None are chosen, will try to'
-                                       'evaluate all with default'
-                                       'settings', dest="track")
+    subparser_17 = parser_17.add_subparsers(
+        help='Choose which track of the '
+        '2017 Challenge you want to evaluate.'
+        'Choices are \n'
+        'track1, track2\n'
+        'if None are chosen, will try to'
+        'evaluate all with default'
+        'settings', dest="track")
     track1_17 = subparser_17.add_parser('track1')
 
     track1_17.add_argument('-d',
@@ -180,5 +183,5 @@ def main():
             'or contact zerospeech2020@gmail.com if you need assistance')
         sys.exit(1)
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     main()
