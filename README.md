@@ -29,6 +29,7 @@ and install it::
     conda create -n zerospeech2020 -c coml python=3.7 tde=0.2 abx=0.4.3
     conda activate zerospeech2020
     git clone git@github.com:bootphon/zerospeech2020.git
+    cd zerospeech2020
     python setup.py install
 
 
