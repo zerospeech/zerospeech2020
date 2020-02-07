@@ -106,15 +106,15 @@ def main():
                            help='Folder containing the ABX tasks')
     # If both editions are chosen
     parser_all.add_argument('-l',
-                           '--language',
-                           choices=['english',
-                                    'surprise'],
-                           nargs='+',
-                           help='choose language to evaluate. If None chosen,'
-                           'all will be evaluated')
+                            '--language',
+                            choices=['english',
+                                     'surprise'],
+                            nargs='+',
+                            help='choose language to evaluate. If None chosen,'
+                            'all will be evaluated')
 
     parser_all.add_argument('task_folder',
-                           help='Folder containing the ABX tasks')
+                            help='Folder containing the ABX tasks')
     parser_all.add_argument('-d17',
                             '--distance17',
                             default='cosine',
@@ -127,7 +127,6 @@ def main():
                             choices=['cosine', 'KL', 'levenshtein'],
                             help='Choose metric for ABX score for '
                             '2019 edition')
-
 
     args = parser.parse_args()
 
@@ -180,6 +179,7 @@ def main():
             'please fix the error and try again, '
             'or contact zerospeech2020@gmail.com if you need assistance')
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
