@@ -1,6 +1,7 @@
 """Get options and launch dispatch evaluation for 2017 or 2019 data"""
 
 import logging
+import os
 import zipfile
 import tempfile
 
@@ -58,7 +59,7 @@ class Evaluation2020:
         # launch ABX evaluation on existing folders
         results_2017 = dict()
         results_2019 = dict()
-        existing = validate_directory(
+        validate_directory(
             self._submission, 'top-level',
             ['metadata.yaml'], self._log, optional_entries=['2017', '2019'])
         if (
