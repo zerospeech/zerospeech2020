@@ -32,7 +32,10 @@ class Evaluation2017_track2():
             self.language_choice = language_choice
         else:
             self.language_choice = [
-                'english', 'french', 'mandarin', 'LANG1', 'LANG2']
+                'english', 'french', 'mandarin']
+        if "LANG1" or "LANG2" in self.language_choice:
+            self._log.error("Can't evaluate LANG1 and LANG2 before"
+                            "submission")
 
     def _read_gold(self, language):
         self._log.info('reading track2 '

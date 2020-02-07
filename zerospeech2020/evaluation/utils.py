@@ -88,13 +88,10 @@ def run_abx(features_path, task, temp, load, n_cpu,
     features = os.path.join(temp, 'features.h5')
 
     if not os.path.isfile(features):
-        log.info('converting features')
         convert(features_path,
                 h5_filename=features,
                 load=load)
-    else:
-        log.info('not converting')
-    # distance
+
     # switch depending on distances
     log.info('computing distance')
 
@@ -121,6 +118,7 @@ def run_abx(features_path, task, temp, load, n_cpu,
     analyze(task,
             score_file,
             analyze_file)
+
     # average
     abx_score = abx_average(analyze_file, task_type)
     return abx_score

@@ -25,7 +25,11 @@ class Evaluation2019():
         if language is not None:
             self.language = language
         else:
-            self.language=['english', 'french'],
+            self.language=['english']
+        if "surprise" in self.language:
+            self._log.error("Can't evaluate surprise language"
+                            "before submission")
+
 
         self.output = output
         self.distance = distance
@@ -134,8 +138,6 @@ class Evaluation2019():
                             normalize = self.normalize
                         else:
                             normalize = None
-                        print(folder)
-                        print(distance_fun)
                         abx_score = run_abx(
                             feat_tmp, task, tmp,
                             load_feat_2019, self.n_cpu, distance_fun,

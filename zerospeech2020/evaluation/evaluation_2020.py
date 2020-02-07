@@ -52,13 +52,7 @@ class Evaluation2020:
             self.distance19 = distance
 
         # set language choices for 17 and 19
-        if language_choice is not None:
-            self.language_choice = language_choice
-        elif language_choice is None and edition == "2017":
-            self.language_choice = [
-                'english', 'french', 'mandarin', 'LANG1', 'LANG2']
-        elif language_choice is None and edition == "2019":
-            self.language_choice = ['english', 'surprise']
+        self.language_choice = language_choice
 
     def _evaluate_abx(self):
         # launch ABX evaluation on existing folders
@@ -80,7 +74,6 @@ class Evaluation2020:
                  self.output,
                  self.duration).evaluate()
         if (self.edition == '2019' or self.edition == 'both'):
-            print('2019')
             results_2019 = Evaluation2019(self._submission,
                  self._log,
                  self.tasks,
