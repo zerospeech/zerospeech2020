@@ -12,7 +12,7 @@ This installation is working on Linux and MacOS systems with
 ### From conda
 
 The simplest way is using conda. The following command will install the package
-in a newly created virtual environment named *zerospeech2020*::
+in a newly created virtual environment named *zerospeech2020*:
 
     conda create -n zerospeech2020 -c coml zerospeech2020
 
@@ -20,11 +20,13 @@ Then, to use it, simply activate the virtual environment::
 
     conda activate zerospeech2020
 
+This solution may fail on macos, if this is the case try one the procedures
+below.
 
-### From source
+### From source (dependencies from conda)
 
 Create a new conda environment with required dependencies, clone the source code
-and install it::
+and install it:
 
     conda create -n zerospeech2020 -c coml python=3.7 tde=0.2 abx=0.4.3
     conda activate zerospeech2020
@@ -32,6 +34,31 @@ and install it::
     cd zerospeech2020
     python setup.py install
 
+If that solution fails (mainly because of conda's dependencies issues) use the
+procedure below.
+
+### From source
+
+    conda create -n zerospeech2020 -c coml python=3 h5py pyyaml h5features pandas scipy numpy joblib cython pytables
+    conda activate zerospeech2020
+
+    # install ABXpy
+    git clone git@github.com:bootphon/ABXpy.git
+    cd ABXpy
+    python setup.py install
+    cd ..
+
+    # install tde
+    git clone git@github.com:bootphon/tdev2.git
+    cd tdev2
+    python setup.py install
+    cd ..
+
+    # install zerospeech2020
+    git clone git@github.com:bootphon/zerospeech2020.git
+    cd zerospeech2020
+    python setup.py install
+    cd ..
 
 ## Usage
 
