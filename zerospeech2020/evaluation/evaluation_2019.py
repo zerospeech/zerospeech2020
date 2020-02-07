@@ -13,14 +13,18 @@ class Evaluation2019():
     def __init__(self, submission,
                  log=logging.getLogger(),
                  task=None,
-                 language=['english', 'french'],
+                 language=None,
                  n_cpu=1,
                  normalize=1,
                  distance="cosine",
                  output=None):
         self._log = log
         self.n_cpu = n_cpu
-        self.language = language
+        if language is not None:
+            self.language = language
+        else:
+            self.language=['english', 'french'],
+
         self.output = output
         self.distance = distance
         self.normalize = normalize

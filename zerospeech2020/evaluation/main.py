@@ -48,6 +48,7 @@ def main():
                                     'mandarin',
                                     'lang1',
                                     'lang2'],
+                           default=None,
                            help='Choose language to evaluate. If None chosen, '
                                 'all will be evaluated')
 
@@ -85,14 +86,9 @@ def main():
                            '--language',
                            choices=['english',
                                     'surprise'],
-                           default=['english', 'surprise'],
+                           default=None,
                            help='choose language to evaluate. If None chosen,'
                            ' all will be evaluated')
-    #parser_19.add_argument('--track',
-    #                       default="track1",
-    #                       help='Choose track1 to evaluate only ABX, or '
-    #                       'track1b to evaluate bitrate')
-
     parser_19.add_argument('-d',
                            '--distance',
                            default='cosine',
@@ -104,14 +100,15 @@ def main():
                            help="choose to normalize DTW distance")
     parser_19.add_argument('task_folder',
                            help='Folder containing the ABX tasks')
+
     # If both editions are chosen
-    parser_all.add_argument('-l',
-                           '--language',
-                           choices=['english',
-                                    'surprise'],
-                           nargs='+',
-                           help='choose language to evaluate. If None chosen,'
-                           'all will be evaluated')
+    #parser_all.add_argument('-l',
+    #                       '--language',
+    #                       choices=['english',
+    #                                'surprise'],
+    #                       nargs='+',
+    #                       help='choose language to evaluate. If None chosen,'
+    #                       'all will be evaluated')
 
     parser_all.add_argument('task_folder',
                            help='Folder containing the ABX tasks')
@@ -132,23 +129,46 @@ def main():
     args = parser.parse_args()
 
     # Default values and subparsers
+
+    # tracks
     if 'track' in args:
         track = args.track
     else:
         track = None
-    if args.edition == "both":
+    
+    # edition
+    if args.edition is None:
+        log.error('Must choose an edition to evaluate.'
+            'Add "-h" to see options.')
+        sys.exit(1)
+    else:
+        edition = args.edition
+
+    if args.edition == "2017" and track == None:
+        log.error('Must choose a track for 2017. Add "-h" to see options')
+        sys.exit(1)
+
+    # distance function
+    if edition == "both":
         distance = [args.distance17, args.distance19]
         normalize = args.normalize
-    elif args.edition == "2017" and args.track == "track2":
+    elif edition == "2017" and args.track == "track2":
         distance = None
         normalize = None
-    else:
+    elif edition == "2019" or edition == "2017":
         distance = args.distance
         normalize = args.normalize
-    if isinstance(args.language, str):
-        language = [args.language]
-    else:
+
+    # language
+    if "language" in args:
         language = args.language
+    else:
+        language = None
+
+    if isinstance(language, str):
+        language = [language]
+
+    # duration
     if 'duration' in args:
         if isinstance(args.duration, str):
             duration = [args.duration]
@@ -157,6 +177,7 @@ def main():
     else:
         duration = ['1s', '10s', '120s']
 
+    # abx Task folder
     if 'task_folder' in args:
         task_folder = args.task_folder
     else:
@@ -166,7 +187,7 @@ def main():
     try:
         Evaluation2020(args.submission, njobs=args.njobs,
                        output=args.output,
-                       log=log, edition=args.edition,
+                       log=log, edition=edition,
                        track=track,
                        language_choice=language,
                        tasks=task_folder,

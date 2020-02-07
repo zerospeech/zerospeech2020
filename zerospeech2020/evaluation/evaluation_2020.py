@@ -3,6 +3,7 @@
 import os
 import shutil
 import logging
+import zipfile
 import tempfile
 
 from .utils import *
@@ -23,7 +24,21 @@ class Evaluation2020:
         self.edition = edition
         self.njobs = njobs
         self.output = output
-        self._submission = submission
+
+        # make sure the submission is either a directory or a zip
+        self._is_zipfile = zipfile.is_zipfile(submission)
+        if not self._is_zipfile and not os.path.isdir(submission):
+            raise ValueError(f'{submission} is not a directory or a zip file')
+
+        # unzip the submission if this is a zip archive
+        if self._is_zipfile:
+            # unzip the submission into a temp directory
+            self._submission = tempfile.mkdtemp()
+            log.info('Unzip submission to %s', self._submission)
+            zipfile.ZipFile(submission, 'r').extractall(self._submission)
+        else:
+            self._submission = submission
+
         self.track = track
         self.tasks = tasks
         self.normalize = normalize
@@ -57,6 +72,7 @@ class Evaluation2020:
         if (
                 self.edition == '2017' 
                 or self.edition == 'both')  and self.track == 'track1':
+            print('2017')
             results_2017 = Evaluation2017_track1(self._submission,
                  self._log,
                  self.language_choice,
@@ -67,6 +83,7 @@ class Evaluation2020:
                  self.output,
                  self.duration).evaluate()
         if (self.edition == '2019' or self.edition == 'both'):
+            print('2019')
             results_2019 = Evaluation2019(self._submission,
                  self._log,
                  self.tasks,
@@ -85,8 +102,8 @@ class Evaluation2020:
         return results_2017
 
     def evaluate(self):
-        if self.track == "track2":
+        if self.track == "track2" or self.edition == "both":
             return self._evaluate_tde()
-        if self.track == "track1" or self.edition == "2019":
+        if self.track == "track1" or self.edition == "2019" or self.edition == "both":
             return self._evaluate_abx()
 
