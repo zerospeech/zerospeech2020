@@ -23,6 +23,7 @@ requirements:
     build:
       - python {{ python }}
       - numpy
+      - pandas
       - pyyaml
       - joblib
       - psutil
@@ -32,6 +33,7 @@ requirements:
     run:
       - python {{ python }}
       - numpy
+      - pandas
       - pyyaml
       - joblib
       - psutil

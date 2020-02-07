@@ -1,7 +1,8 @@
 """Evaluation for the 2017 data"""
 
 import logging
-import pkg_resources 
+import os
+import pkg_resources
 
 from .utils import *
 from tdev2.measures.ned import *
@@ -11,6 +12,7 @@ from tdev2.measures.coverage import *
 from tdev2.measures.token_type import *
 from tdev2.readers.gold_reader import *
 from tdev2.readers.disc_reader import Disc as Track2Reader
+
 
 class Evaluation2017_track2():
     def __init__(self, submission,
@@ -29,8 +31,8 @@ class Evaluation2017_track2():
         if language_choice is not None:
             self.language_choice = language_choice
         else:
-            self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
-
+            self.language_choice = [
+                'english', 'french', 'mandarin', 'LANG1', 'LANG2']
 
     def _read_gold(self, language):
         self._log.info('reading track2 '
@@ -41,17 +43,18 @@ class Evaluation2017_track2():
         phn_path = pkg_resources.resource_filename(
                 pkg_resources.Requirement.parse('tdev2'),
                 'tdev2/share/{}.phn'.format(language))
-        self.gold = Gold(wrd_path=wrd_path, 
-                    phn_path=phn_path)
+        self.gold = Gold(wrd_path=wrd_path,
+                         phn_path=phn_path)
 
     def _read_discovered(self, class_file, language):
         self._log.info('reading discovered '
-                        'classes for {}'.format(language))
+                       'classes for {}'.format(language))
         if not self.gold:
-            raise ValueError('Trying to evaluate track2 without reading the gold')
+            raise ValueError(
+                'Trying to evaluate track2 without reading the gold')
 
         self.disc = Track2Reader(class_file, self.gold)
- 
+
     def _evaluate_lang(self, output_lang):
         """Compute all metrics on requested language"""
         details = dict()
@@ -126,9 +129,8 @@ class Evaluation2017_track2():
         track2 = dict()
         scores = dict()
         for language in self.language_choice:
-            class_file = os.path.join(self._submission, "2017",
-                         "track2",
-                         "{}.txt".format(language))
+            class_file = os.path.join(
+                self._submission, "2017", "track2", "{}.txt".format(language))
 
             # check if class  file exists and evaluate it
             if os.path.isfile(class_file):
@@ -138,16 +140,16 @@ class Evaluation2017_track2():
                 self._read_gold(language)
                 self._read_discovered(class_file, language)
                 ned, coverage, details = self._evaluate_lang(output_lang)
-                
+
                 scores['{}_ned'.format(language)] = ned
                 scores['{}_coverage'.format(language)] = coverage
                 scores['{}_words'.format(language)] = details['words']
                 track2['details_{}'.format(language)] = details
 
-
             else:
-                self._log.warning('{} does not exist,'
-                        ' skipping evaluation'.format(class_file))
+                self._log.warning(
+                    '{} does not exist,'
+                    ' skipping evaluation'.format(class_file))
         track2['scores'] = scores
         return track2
 
@@ -180,7 +182,7 @@ class Evaluation2017_track1():
 
     def evaluate(self):
         """Run ABX evaluation on selected languages, on selected durations"""
-        track1 = dict() 
+        track1 = dict()
         across = dict()
         within = dict()
 
@@ -196,27 +198,28 @@ class Evaluation2017_track1():
                 task_across = tasks[(language, duration, "across")]
                 task_within = tasks[(language, duration, "within")]
                 if os.path.isdir(feature_folder):
-                    
+
                     # compute abx across score
                     self._log.info('across')
                     ac = run_abx(feature_folder, task_across, tmp,
-                            load_feat_2017, self.n_cpu, self.distance,
-                            self.normalize, 'across', self._log)
+                                 load_feat_2017, self.n_cpu, self.distance,
+                                 self.normalize, 'across', self._log)
                     across['{}_{}'.format(language, duration)] = ac
 
                     # compute abx within score
                     self._log.info('within')
                     wi = run_abx(feature_folder, task_within, tmp,
-                            load_feat_2017, self.n_cpu, self.distance,
-                            self.normalize, 'within', self._log)
+                                 load_feat_2017, self.n_cpu, self.distance,
+                                 self.normalize, 'within', self._log)
                     within['{}_{}'.format(language, duration)] = wi
                     write_scores_17(ac, wi, language, duration, self.output)
                     empty_tmp_dir(tmp)
 
                 else:
-                    self._log.warning("features for {} {} were not found "
-                            " in \n {}\n Skipping them.".format(
-                                language, duration, feature_folder))
+                    self._log.warning(
+                        "features for {} {} were not found "
+                        " in \n {}\n Skipping them.".format(
+                            language, duration, feature_folder))
         track1['within'] = within
         track1['across'] = across
         return track1

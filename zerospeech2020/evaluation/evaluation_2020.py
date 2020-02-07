@@ -1,7 +1,5 @@
 """Get options and launch dispatch evaluation for 2017 or 2019 data"""
 
-import os
-import shutil
 import logging
 import zipfile
 import tempfile
@@ -10,6 +8,7 @@ from .utils import *
 from .evaluation_2019 import Evaluation2019
 from zerospeech2020.validation.utils import validate_directory
 from .evaluation_2017 import Evaluation2017_track1, Evaluation2017_track2
+
 
 class Evaluation2020:
     def __init__(self, submission, njobs=1,
@@ -56,11 +55,10 @@ class Evaluation2020:
         if language_choice is not None:
             self.language_choice = language_choice
         elif language_choice is None and edition == "2017":
-            self.language_choice = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
+            self.language_choice = [
+                'english', 'french', 'mandarin', 'LANG1', 'LANG2']
         elif language_choice is None and edition == "2019":
             self.language_choice = ['english', 'surprise']
-
-
 
     def _evaluate_abx(self):
         # launch ABX evaluation on existing folders
@@ -70,9 +68,8 @@ class Evaluation2020:
             self._submission, 'top-level',
             ['metadata.yaml'], self._log, optional_entries=['2017', '2019'])
         if (
-                self.edition == '2017' 
-                or self.edition == 'both')  and self.track == 'track1':
-            print('2017')
+                self.edition == '2017'
+                or self.edition == 'both') and self.track == 'track1':
             results_2017 = Evaluation2017_track1(self._submission,
                  self._log,
                  self.language_choice,
@@ -106,4 +103,3 @@ class Evaluation2020:
             return self._evaluate_tde()
         if self.track == "track1" or self.edition == "2019" or self.edition == "both":
             return self._evaluate_abx()
-

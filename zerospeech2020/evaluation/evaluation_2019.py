@@ -4,10 +4,12 @@ import math
 import glob
 import shutil
 import logging
+import os
 import pkg_resources
 
 from .utils import *
 from zerospeech2020.read_2019_features import *
+
 
 class Evaluation2019():
     def __init__(self, submission,
@@ -38,17 +40,16 @@ class Evaluation2019():
             self.task_folder = task
         else:
             raise ValueError("No ABX task folder given, can't compute ABX")
-        
 
     @staticmethod
     def _entropy_symbols(n_lines, symbol_counts):
         """Calculate the entropy for all different symbols in the file
-    
+
         Argument(s);
         n_lines : number of symbols in the file (number of lines)
         symbol_counts : contains all different type of symbols and how many
         time they appear in the file
-    
+
         Returns :
         ent_s : the entropy for all symbols
         """
@@ -64,11 +65,11 @@ class Evaluation2019():
 
     def _bitrate(self, symbol_counts,  n_lines, total_duration):
         """Calculate bitrate
-    
+
         Argument(s);
         n_lines : number of duration in the file (e.g number of lines)
         total_duration : total time duration of file
-    
+
         Returns :
         bitrate : the bitrate for encoding given file as :
         B = (N/D) *  (H(s))
@@ -78,10 +79,10 @@ class Evaluation2019():
         """
         bitrate = None
         if len(symbol_counts) > 0:
-            bitrate = n_lines * self._entropy_symbols(n_lines,
-                                                 symbol_counts)/total_duration
+            bitrate = n_lines * self._entropy_symbols(
+                n_lines, symbol_counts) / total_duration
         return bitrate
-    
+
     def bitrate(self, features, bitrate_file_list):
         symbol_counts, n_lines, total_duration = \
             read_all(
@@ -97,7 +98,6 @@ class Evaluation2019():
             filename = file_path.split('/')[-1]
             shutil.copyfile(file_path, os.path.join(feat_tmp, filename))
 
-
     def evaluate(self):
         """Run ABX evaluation and bitrate"""
         details_abx = dict()
@@ -109,14 +109,14 @@ class Evaluation2019():
 
             # Create temp folder for intermediary ABX files
             tmp = make_temporary()
-            
+
             # extract auxiliary if they exist
             for folder in ['test', 'auxiliary1', 'auxiliary2']:
 
                 # Create temp folder for features
                 feat_tmp = make_temporary()
-                feature_folder = os.path.join(self._submission, "2019",
-                        lang, folder)
+                feature_folder = os.path.join(
+                    self._submission, "2019", lang, folder)
 
                 # check if folder exist, otherise don't evaluate
                 if not os.path.isdir(feature_folder):
@@ -136,9 +136,10 @@ class Evaluation2019():
                             normalize = None
                         print(folder)
                         print(distance_fun)
-                        abx_score = run_abx(feat_tmp, task, tmp, 
-                                load_feat_2019, self.n_cpu, distance_fun,
-                                normalize,'across', self._log)
+                        abx_score = run_abx(
+                            feat_tmp, task, tmp,
+                            load_feat_2019, self.n_cpu, distance_fun,
+                            normalize,'across', self._log)
                         empty_tmp_dir(tmp)
 
                         details_abx['{}_{}_abx_{}'.format(lang, folder,
@@ -151,15 +152,15 @@ class Evaluation2019():
                     f'zerospeech2020/share/2019/{lang}/bitrate_filelist.txt')
 
                 bitrate_score = self.bitrate(feat_tmp, bitrate_file_list)
-                details_bitrate['{}_{}_bitrate'.format(lang,
-                    folder)] = bitrate_score
-                write_scores_19(abx_score, bitrate_score, lang, self.distance,
-                                output)
-            scores['{}_abx'.format(lang)] = details_abx['{}_test_abx_{}'.format(
-                lang, self.distance)]
-            scores['{}_bitrate'.format(lang)] = details_bitrate['{}_test_bitrate'.format(lang)]
+                details_bitrate['{}_{}_bitrate'.format(
+                    lang, folder)] = bitrate_score
+                write_scores_19(
+                    abx_score, bitrate_score, lang, self.distance, output)
+            scores['{}_abx'.format(lang)] = details_abx[
+                '{}_test_abx_{}'.format(lang, self.distance)]
+            scores['{}_bitrate'.format(lang)] = details_bitrate[
+                '{}_test_bitrate'.format(lang)]
         results_2019['scores'] = scores
         results_2019['details_bitrate'] = details_bitrate
         results_2019['details_abx'] = details_abx
         return results_2019
-

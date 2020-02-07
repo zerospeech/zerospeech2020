@@ -1,15 +1,13 @@
 
 import os
 import pandas
-import argparse
 import logging
 import ast
 import tempfile
-import shutil
 import numpy as np
 import sys
 
-from ABXpy.misc.any2h5features import *
+from ABXpy.misc.any2h5features import convert
 from ABXpy.score import score
 from ABXpy.analyze import analyze
 from ABXpy.distances import distances
@@ -20,6 +18,7 @@ def make_temporary():
     """ Create temporary folder for ABX files"""
     return tempfile.mkdtemp()
 
+
 def empty_tmp_dir(tmp):
     """ Remove ABX files from temporary folder"""
     for fn in os.listdir(tmp):
@@ -29,6 +28,7 @@ def empty_tmp_dir(tmp):
         except:
             pass
 
+
 def abx_average(filename, task_type):
     """ Compute ABX averaged score from ABX analyze file.
         To compute average, first average on context, then average on
@@ -36,7 +36,7 @@ def abx_average(filename, task_type):
 
         Output
         average - error rate between 0 and 100 - the lower the better
-        
+
     """
     df = pandas.read_csv(filename, sep='\t')
     if task_type == 'across':
@@ -45,12 +45,10 @@ def abx_average(filename, task_type):
             ['speaker_1', 'speaker_2', 'phone_1', 'phone_2'], as_index=False)
         df = groups['score'].mean()
     elif task_type == 'within':
-        #arr = np.array(map(ast.literal_eval, df['by']))
         arr = np.array(list(map(ast.literal_eval, df['by'])))
 
-        df['speaker']  = [e for e, f, g in arr]
+        df['speaker'] = [e for e, f, g in arr]
         df['context'] = [f for e, f, g in arr]
-        #del df['by']
 
         # aggregate on context
         groups = df.groupby(['speaker', 'phone_1', 'phone_2'], as_index=False)
@@ -66,8 +64,9 @@ def abx_average(filename, task_type):
     average = (1.0-average)*100
     return (average)
 
+
 def run_abx(features_path, task, temp, load, n_cpu,
-        distance, normalized, task_type, log=logging.getLogger()):
+            distance, normalized, task_type, log=logging.getLogger()):
     """ Run ABX pipeline
         Input
         features_path: folder containing features
@@ -87,12 +86,12 @@ def run_abx(features_path, task, temp, load, n_cpu,
                 'levenshtein': edit_distance}
     # convert
     features = os.path.join(temp, 'features.h5')
-    
+
     if not os.path.isfile(features):
         log.info('converting features')
-        convert(features_path, 
-            h5_filename=features, 
-            load=load)
+        convert(features_path,
+                h5_filename=features,
+                load=load)
     else:
         log.info('not converting')
     # distance
@@ -103,12 +102,12 @@ def run_abx(features_path, task, temp, load, n_cpu,
     sys.stdout = open(os.devnull, 'w')
     distance_file = os.path.join(temp, 'distance_{}.h5'.format(task_type))
     distances.compute_distances(features,
-                                'features', 
+                                'features',
                                 task,
                                 distance_file,
                                 dist2fun[distance],
                                 normalized,
-                                n_cpu = n_cpu)
+                                n_cpu=n_cpu)
     sys.stdout = sys.__stdout__
 
     # score
@@ -126,22 +125,23 @@ def run_abx(features_path, task, temp, load, n_cpu,
     abx_score = abx_average(analyze_file, task_type)
     return abx_score
 
-def write_scores_17(across, within, language,
-                duration, output):
-    out_score = os.path.join(output,
-                  '{}_{}_abx.txt'.format(language, duration))
+
+def write_scores_17(across, within, language, duration, output):
+    out_score = os.path.join(
+        output, '{}_{}_abx.txt'.format(language, duration))
     with open(out_score, 'w') as fout:
         fout.write(u'across: {}\n'.format(across))
         fout.write(u'within: {}\n'.format(within))
 
+
 def write_scores_19(abx_score, bitrate_score, language,
                     distance, output):
-    out_score = os.path.join(output,
-                  '{}.txt'.format(language))
+    out_score = os.path.join(output, '{}.txt'.format(language))
     with open(out_score, 'w') as fout:
         fout.write(u'ABX_distance: {}\n'.format(distance))
         fout.write(u'ABX_score: {}\n'.format(abx_score))
         fout.write(u'bitrate: {}\n'.format(bitrate_score))
+
 
 def load_feat_2017(file_path):
     # read file, get features and return dict giving time and features
@@ -156,6 +156,7 @@ def load_feat_2017(file_path):
             time.append(float(unit_data[0]))
             features.append([float(x) for x in unit_data])
     return {'time': np.array(time), 'features': np.array(features)}
+
 
 def load_feat_2019(file_path):
     # read file, get features and return dict giving time and features
@@ -172,6 +173,7 @@ def load_feat_2019(file_path):
     time = np.array(time)
     features = np.array(features)
     return {'time': np.array(time), 'features': np.array(features)}
+
 
 def get_tasks(task_folder, year):
     """Return the paths to the ABX tasks file"""
@@ -197,4 +199,3 @@ def get_tasks(task_folder, year):
                 ("mandarin", "1s", "within"): os.path.join(task_folder, '2017', "mandarin", '1s', '1s_byCtxtSpkr.abx'),
                 ("mandarin", "10s", "within"): os.path.join(task_folder, '2017', "mandarin", '10s','10s_byCtxtSpkr.abx'),
                 ("mandarin", "120s", "within"): os.path.join(task_folder, '2017', "mandarin", '120s','120s_byCtxtSpkr.abx')}
-
