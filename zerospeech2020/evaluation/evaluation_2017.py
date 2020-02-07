@@ -1,9 +1,9 @@
+"""Evaluation for the 2017 data"""
 
-import pkg_resources 
 import logging
+import pkg_resources 
 
-
-from utils import *
+from .utils import *
 from tdev2.measures.ned import *
 from tdev2.measures.boundary import *
 from tdev2.measures.grouping import *

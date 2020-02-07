@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-
-import argparse
-import logging
+"""Evaluate submission for the zerospeech2020 challenge"""
 import sys
-from zerospeech2020.evaluation.evaluation_2020 import Evaluation2020
-# from zerospeech2020.evaluation.evaluation_2017 import Evaluation2017_track1
-# from zerospeech2020.evaluation.evaluation_2019 import *
+import logging
+import argparse
+from .evaluation_2020 import Evaluation2020
 
 # setup logging
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)

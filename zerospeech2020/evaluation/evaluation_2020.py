@@ -1,12 +1,14 @@
-import logging
+"""Get options and launch dispatch evaluation for 2017 or 2019 data"""
+
 import os
 import shutil
+import logging
 import tempfile
 
+from .utils import *
+from .evaluation_2019 import Evaluation2019
 from zerospeech2020.validation.utils import validate_directory
-from evaluation_2019 import Evaluation2019
-from evaluation_2017 import Evaluation2017_track1, Evaluation2017_track2
-from utils import *
+from .evaluation_2017 import Evaluation2017_track1, Evaluation2017_track2
 
 class Evaluation2020:
     def __init__(self, submission, njobs=1,

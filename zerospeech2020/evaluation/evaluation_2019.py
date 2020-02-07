@@ -1,10 +1,13 @@
-from zerospeech2020.read_2019_features import *
+"""Evaluation for the 2019 data"""
+
 import math
-import pkg_resources
-from utils import *
-import logging
 import glob
 import shutil
+import logging
+import pkg_resources
+
+from .utils import *
+from zerospeech2020.read_2019_features import *
 
 class Evaluation2019():
     def __init__(self, submission,
