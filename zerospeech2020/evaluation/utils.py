@@ -176,24 +176,42 @@ def load_feat_2019(file_path):
 def get_tasks(task_folder, year):
     """Return the paths to the ABX tasks file"""
     if year == 2019:
-        #return {"english": os.path.join(task_folder, 'by-context-across-speakers.abx')}
-        return {'english': '/scratch2/jkaradayi/projects/softwares/zs19_docker/system/info_test/english/byCtxt_acSpkr.abx'}
+        return {"english": os.path.join(task_folder, 'byCtxt_acSpkr.abx')}
     else:
-        return {("english", "1s", "across"): os.path.join(task_folder, '2017', "english", '1s', '1s_byCtxt_acSpkr.abx'),
-                ("english", "10s", "across"): os.path.join(task_folder, '2017', "english", '10s','10s_byCtxt_acSpkr.abx'),
-                ("english", "120s", "across"): os.path.join(task_folder, '2017', "english", '120s','120s_byCtxt_acSpkr.abx'),
-                ("french", "1s", "across"): os.path.join(task_folder, '2017', "french", '1s', '1s_byCtxt_acSpkr.abx'),
-                ("french", "10s", "across"): os.path.join(task_folder, '2017', "french", '10s','10s_byCtxt_acSpkr.abx'),
-                ("french", "120s", "across"): os.path.join(task_folder, '2017', "french", '120s','120s_byCtxt_acSpkr.abx'),
-                ("mandarin", "1s", "across"): os.path.join(task_folder, '2017', "mandarin", '1s', '1s_byCtxt_acSpkr.abx'),
-                ("mandarin", "10s", "across"): os.path.join(task_folder, '2017', "mandarin", '10s','10s_byCtxt_acSpkr.abx'),
-                ("mandarin", "120s", "across"): os.path.join(task_folder, '2017', "mandarin", '120s','120s_byCtxt_acSpkr.abx'),
-                ("english", "1s", "within"): os.path.join(task_folder, '2017', "english", '1s', '1s_byCtxtSpkr.abx'),
-                ("english", "10s", "within"): os.path.join(task_folder, '2017', "english", '10s','10s_byCtxtSpkr.abx'),
-                ("english", "120s", "within"): os.path.join(task_folder, '2017', "english", '120s','120s_byCtxtSpkr.abx'),
-                ("french", "1s", "within"): os.path.join(task_folder, '2017', "french", '1s', '1s_byCtxtSpkr.abx'),
-                ("french", "10s", "within"): os.path.join(task_folder, '2017', "french", '10s','10s_byCtxtSpkr.abx'),
-                ("french", "120s", "within"): os.path.join(task_folder, '2017', "french", '120s','120s_byCtxtSpkr.abx'),
-                ("mandarin", "1s", "within"): os.path.join(task_folder, '2017', "mandarin", '1s', '1s_byCtxtSpkr.abx'),
-                ("mandarin", "10s", "within"): os.path.join(task_folder, '2017', "mandarin", '10s','10s_byCtxtSpkr.abx'),
-                ("mandarin", "120s", "within"): os.path.join(task_folder, '2017', "mandarin", '120s','120s_byCtxtSpkr.abx')}
+        return {
+            ("english", "1s", "across"): os.path.join(
+                task_folder, '2017', "english", '1s', '1s_byCtxt_acSpkr.abx'),
+            ("english", "10s", "across"): os.path.join(
+                task_folder, '2017', "english", '10s', '10s_byCtxt_acSpkr.abx'),
+            ("english", "120s", "across"): os.path.join(
+                task_folder, '2017', "english", '120s', '120s_byCtxt_acSpkr.abx'),
+            ("french", "1s", "across"): os.path.join(
+                task_folder, '2017', "french", '1s', '1s_byCtxt_acSpkr.abx'),
+            ("french", "10s", "across"): os.path.join(
+                task_folder, '2017', "french", '10s', '10s_byCtxt_acSpkr.abx'),
+            ("french", "120s", "across"): os.path.join(
+                task_folder, '2017', "french", '120s', '120s_byCtxt_acSpkr.abx'),
+            ("mandarin", "1s", "across"): os.path.join(
+                task_folder, '2017', "mandarin", '1s', '1s_byCtxt_acSpkr.abx'),
+            ("mandarin", "10s", "across"): os.path.join(
+                task_folder, '2017', "mandarin", '10s', '10s_byCtxt_acSpkr.abx'),
+            ("mandarin", "120s", "across"): os.path.join(
+                task_folder, '2017', "mandarin", '120s', '120s_byCtxt_acSpkr.abx'),
+            ("english", "1s", "within"): os.path.join(
+                task_folder, '2017', "english", '1s', '1s_byCtxtSpkr.abx'),
+            ("english", "10s", "within"): os.path.join(
+                task_folder, '2017', "english", '10s', '10s_byCtxtSpkr.abx'),
+            ("english", "120s", "within"): os.path.join(
+                task_folder, '2017', "english", '120s', '120s_byCtxtSpkr.abx'),
+            ("french", "1s", "within"): os.path.join(
+                task_folder, '2017', "french", '1s', '1s_byCtxtSpkr.abx'),
+            ("french", "10s", "within"): os.path.join(
+                task_folder, '2017', "french", '10s', '10s_byCtxtSpkr.abx'),
+            ("french", "120s", "within"): os.path.join(
+                task_folder, '2017', "french", '120s', '120s_byCtxtSpkr.abx'),
+            ("mandarin", "1s", "within"): os.path.join(
+                task_folder, '2017', "mandarin", '1s', '1s_byCtxtSpkr.abx'),
+            ("mandarin", "10s", "within"): os.path.join(
+                task_folder, '2017', "mandarin", '10s', '10s_byCtxtSpkr.abx'),
+            ("mandarin", "120s", "within"): os.path.join(
+                task_folder, '2017', "mandarin", '120s', '120s_byCtxtSpkr.abx')}
