@@ -1,12 +1,13 @@
+import ast
 import atexit
+import logging
+import numexpr
+import numpy as np
 import os
 import pandas
-import logging
-import ast
-import tempfile
-import numpy as np
 import shutil
 import sys
+import tempfile
 
 from ABXpy.misc.any2h5features import convert
 from ABXpy.score import score
@@ -100,7 +101,9 @@ def run_abx(features_path, task, temp, load, n_cpu,
                 load=load)
 
     # switch depending on distances
-    log.info('computing %s distance', distance)
+    log.info('computing ABX score (%s distance)', distance)
+
+    numexpr.set_num_threads(n_cpu)
 
     # ABX Distances prints some messages we do not want to display
     sys.stdout = open(os.devnull, 'w')
@@ -117,9 +120,7 @@ def run_abx(features_path, task, temp, load, n_cpu,
 
     # score
     score_file = os.path.join(temp, 'score_{}.h5'.format(task_type))
-    score(task,
-          distance_file,
-          score_file)
+    score(task, distance_file, score_file)
 
     # analyze
     analyze_file = os.path.join(temp, 'analyze_{}.csv'.format(task_type))
