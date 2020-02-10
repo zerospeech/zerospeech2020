@@ -100,7 +100,7 @@ def run_abx(features_path, task, temp, load, n_cpu,
                 load=load)
 
     # switch depending on distances
-    log.info('computing distance')
+    log.info('computing %s distance', distance)
 
     # ABX Distances prints some messages we do not want to display
     sys.stdout = open(os.devnull, 'w')
