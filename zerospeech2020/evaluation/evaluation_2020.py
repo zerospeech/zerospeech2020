@@ -5,8 +5,8 @@ import os
 import zipfile
 import tempfile
 
-from .utils import *
 from .evaluation_2019 import Evaluation2019
+
 from zerospeech2020.validation.utils import validate_directory
 from .evaluation_2017 import Evaluation2017_track1, Evaluation2017_track2
 
@@ -16,8 +16,10 @@ class Evaluation2020:
                  output=None,
                  log=logging.getLogger(),
                  edition=None,
-                 track=None, language_choice=None,
-                 tasks=None, distance="default",
+                 track=None,
+                 language_choice=None,
+                 tasks=None,
+                 distance="default",
                  normalize=1,
                  duration=['1s', '10s', '120s']):
         self._log = log
@@ -65,35 +67,38 @@ class Evaluation2020:
         if (
                 self.edition == '2017'
                 or self.edition == 'both') and self.track == 'track1':
-            results_2017 = Evaluation2017_track1(self._submission,
-                 self._log,
-                 self.language_choice,
-                 self.tasks,
-                 self.njobs,
-                 self.normalize,
-                 self.distance17,
-                 self.output,
-                 self.duration).evaluate()
+            results_2017 = Evaluation2017_track1(
+                self._submission,
+                self._log,
+                self.language_choice,
+                self.tasks,
+                self.njobs,
+                self.normalize,
+                self.distance17,
+                self.output,
+                self.duration).evaluate()
         if (self.edition == '2019' or self.edition == 'both'):
-            results_2019 = Evaluation2019(self._submission,
-                 self._log,
-                 self.tasks,
-                 self.language_choice,
-                 self.njobs,
-                 self.normalize,
-                 self.distance19,
-                 self.output).evaluate()
+            results_2019 = Evaluation2019(
+                self._submission,
+                self._log,
+                self.tasks,
+                self.language_choice,
+                self.njobs,
+                self.normalize,
+                self.distance19,
+                self.output).evaluate()
         return results_2017, results_2019
 
     def _evaluate_tde(self):
-        results_2017 = Evaluation2017_track2(self._submission,
-                 self._log,
-                 self.language_choice,
-                 self.output).evaluate()
+        results_2017 = Evaluation2017_track2(
+            self._submission,
+            self._log,
+            self.language_choice,
+            self.output).evaluate()
         return results_2017
 
     def evaluate(self):
         if self.track == "track2" or self.edition == "both":
             return self._evaluate_tde()
-        if self.track == "track1" or self.edition == "2019" or self.edition == "both":
+        if self.track == "track1" or self.edition in ("2019", "both"):
             return self._evaluate_abx()

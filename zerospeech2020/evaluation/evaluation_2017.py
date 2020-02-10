@@ -4,13 +4,13 @@ import logging
 import os
 import pkg_resources
 
-from .utils import *
-from tdev2.measures.ned import *
-from tdev2.measures.boundary import *
-from tdev2.measures.grouping import *
-from tdev2.measures.coverage import *
-from tdev2.measures.token_type import *
-from tdev2.readers.gold_reader import *
+from zerospeech2020.evaluation import utils
+from tdev2.measures.ned import Ned
+from tdev2.measures.boundary import Boundary
+from tdev2.measures.grouping import Grouping
+from tdev2.measures.coverage import Coverage
+from tdev2.measures.token_type import TokenType
+from tdev2.readers.gold_reader import Gold
 from tdev2.readers.disc_reader import Disc as Track2Reader
 
 
@@ -92,7 +92,8 @@ class Evaluation2017_track2():
             self._log.info('Computing Token and Type...')
             token_type = TokenType(self.gold, self.disc, output_lang)
             token_type.compute_token_type()
-            details['token_precision'], details['type_precision'] = token_type.precision
+            details['token_precision'], details['type_precision'] = (
+                token_type.precision)
             details['token_recall'], details['type_recall'] = token_type.recall
             details['token_fscore'], details['type_fscore'] = token_type.fscore
             details['words'] = len(token_type.type_seen)
@@ -190,9 +191,9 @@ class Evaluation2017_track1():
         within = dict()
 
         # make temporary directory
-        tmp = make_temporary()
+        tmp = utils.make_temporary()
         self._log.info('temp dir {}'.format(tmp))
-        tasks = get_tasks(self.tasks, "2017")
+        tasks = utils.get_tasks(self.tasks, "2017")
         for language in self.language_choice:
             self._log.info('evaluating {}'.format(language))
             for duration in self.durations_choice:
@@ -204,19 +205,22 @@ class Evaluation2017_track1():
 
                     # compute abx across score
                     self._log.info('across')
-                    ac = run_abx(feature_folder, task_across, tmp,
-                                 load_feat_2017, self.n_cpu, self.distance,
-                                 self.normalize, 'across', self._log)
+                    ac = utils.run_abx(
+                        feature_folder, task_across, tmp,
+                        utils.load_feat_2017, self.n_cpu, self.distance,
+                        self.normalize, 'across', self._log)
                     across['{}_{}'.format(language, duration)] = ac
 
                     # compute abx within score
                     self._log.info('within')
-                    wi = run_abx(feature_folder, task_within, tmp,
-                                 load_feat_2017, self.n_cpu, self.distance,
-                                 self.normalize, 'within', self._log)
+                    wi = utils.run_abx(
+                        feature_folder, task_within, tmp,
+                        utils.load_feat_2017, self.n_cpu, self.distance,
+                        self.normalize, 'within', self._log)
                     within['{}_{}'.format(language, duration)] = wi
-                    write_scores_17(ac, wi, language, duration, self.output)
-                    empty_tmp_dir(tmp)
+                    utils.write_scores_17(
+                        ac, wi, language, duration, self.output)
+                    utils.empty_tmp_dir(tmp)
 
                 else:
                     self._log.warning(

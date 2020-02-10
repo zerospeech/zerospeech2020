@@ -98,13 +98,14 @@ def run_abx(features_path, task, temp, load, n_cpu,
     # ABX Distances prints some messages we do not want to display
     sys.stdout = open(os.devnull, 'w')
     distance_file = os.path.join(temp, 'distance_{}.h5'.format(task_type))
-    distances.compute_distances(features,
-                                'features',
-                                task,
-                                distance_file,
-                                dist2fun[distance],
-                                normalized,
-                                n_cpu=n_cpu)
+    distances.compute_distances(
+        features,
+        'features',
+        task,
+        distance_file,
+        dist2fun[distance],
+        normalized,
+        n_cpu=n_cpu)
     sys.stdout = sys.__stdout__
 
     # score
@@ -115,9 +116,7 @@ def run_abx(features_path, task, temp, load, n_cpu,
 
     # analyze
     analyze_file = os.path.join(temp, 'analyze_{}.csv'.format(task_type))
-    analyze(task,
-            score_file,
-            analyze_file)
+    analyze(task, score_file, analyze_file)
 
     # average
     abx_score = abx_average(analyze_file, task_type)

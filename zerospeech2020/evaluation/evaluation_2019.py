@@ -7,8 +7,8 @@ import logging
 import os
 import pkg_resources
 
-from .utils import *
-from zerospeech2020.read_2019_features import *
+from zerospeech2020.evaluation import utils
+from zerospeech2020.read_2019_features import read_all
 
 
 class Evaluation2019():
@@ -25,11 +25,10 @@ class Evaluation2019():
         if language is not None:
             self.language = language
         else:
-            self.language=['english']
+            self.language = ['english']
         if "surprise" in self.language:
             self._log.error("Can't evaluate surprise language"
                             "before submission")
-
 
         self.output = output
         self.distance = distance
@@ -88,12 +87,8 @@ class Evaluation2019():
         return bitrate
 
     def bitrate(self, features, bitrate_file_list):
-        symbol_counts, n_lines, total_duration = \
-            read_all(
-                bitrate_file_list,
-                features,
-                True,
-                log=False)
+        symbol_counts, n_lines, total_duration = read_all(
+            bitrate_file_list, features, True, log=False)
         return self._bitrate(symbol_counts,  n_lines, total_duration)
 
     @staticmethod
@@ -112,13 +107,13 @@ class Evaluation2019():
         for lang in self.language:
 
             # Create temp folder for intermediary ABX files
-            tmp = make_temporary()
+            tmp = utils.make_temporary()
 
             # extract auxiliary if they exist
             for folder in ['test', 'auxiliary1', 'auxiliary2']:
 
                 # Create temp folder for features
-                feat_tmp = make_temporary()
+                feat_tmp = utils.make_temporary()
                 feature_folder = os.path.join(
                     self._submission, "2019", lang, folder)
 
@@ -128,7 +123,7 @@ class Evaluation2019():
                 self._get_features(feature_folder, feat_tmp)
 
                 # Get ABX task
-                task = get_tasks(self.task_folder, 2019)[lang]
+                task = utils.get_tasks(self.task_folder, 2019)[lang]
 
                 # Compute ABX score
                 output = os.path.join(self.output)
@@ -138,14 +133,14 @@ class Evaluation2019():
                             normalize = self.normalize
                         else:
                             normalize = None
-                        abx_score = run_abx(
+                        abx_score = utils.run_abx(
                             feat_tmp, task, tmp,
-                            load_feat_2019, self.n_cpu, distance_fun,
-                            normalize,'across', self._log)
-                        empty_tmp_dir(tmp)
+                            utils.load_feat_2019, self.n_cpu, distance_fun,
+                            normalize, 'across', self._log)
+                        utils.empty_tmp_dir(tmp)
 
-                        details_abx['{}_{}_abx_{}'.format(lang, folder,
-                            distance_fun)] = abx_score
+                        details_abx['{}_{}_abx_{}'.format(
+                            lang, folder, distance_fun)] = abx_score
                 else:
                     raise ValueError("Trying to evaluate feature that"
                                      " doesn't exist for 2019 corpus")
@@ -156,7 +151,7 @@ class Evaluation2019():
                 bitrate_score = self.bitrate(feat_tmp, bitrate_file_list)
                 details_bitrate['{}_{}_bitrate'.format(
                     lang, folder)] = bitrate_score
-                write_scores_19(
+                utils.write_scores_19(
                     abx_score, bitrate_score, lang, self.distance, output)
             scores['{}_abx'.format(lang)] = details_abx[
                 '{}_test_abx_{}'.format(lang, self.distance)]
