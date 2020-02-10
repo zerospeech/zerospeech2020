@@ -1,10 +1,11 @@
-
+import atexit
 import os
 import pandas
 import logging
 import ast
 import tempfile
 import numpy as np
+import shutil
 import sys
 
 from ABXpy.misc.any2h5features import convert
@@ -16,7 +17,13 @@ from ABXpy.distance import default_distance, edit_distance, dtw_kl_distance
 
 def make_temporary():
     """ Create temporary folder for ABX files"""
-    return tempfile.mkdtemp()
+    def remove_directory(d):
+        if os.path.exists(d):
+            shutil.rmtree(d, ignore_errors=True)
+
+    tmpdir = tempfile.mkdtemp()
+    atexit.register(remove_directory, tmpdir)
+    return tmpdir
 
 
 def empty_tmp_dir(tmp):
