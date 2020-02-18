@@ -2,13 +2,10 @@
 
 import logging
 import os
-import shutil
-import tempfile
-import zipfile
 
 from .submission_2017 import Submission2017
 from .submission_2019 import Submission2019
-from .utils import validate_directory, validate_yaml
+from .utils import validate_directory, validate_yaml, unzip_if_needed
 
 
 class Submission2020:
@@ -16,26 +13,10 @@ class Submission2020:
         self._log = log
         self._njobs = njobs
 
-        # make sure the submission is either a directory or a zip
-        self._is_zipfile = zipfile.is_zipfile(submission)
-        if not self._is_zipfile and not os.path.isdir(submission):
-            raise ValueError(f'{submission} is not a directory or a zip file')
-
         # unzip the submission if this is a zip archive
-        if self._is_zipfile:
-            # unzip the submission into a temp directory
-            self._submission = tempfile.mkdtemp()
-            log.info('Unzip submission to %s', self._submission)
-            zipfile.ZipFile(submission, 'r').extractall(self._submission)
-        else:
-            self._submission = submission
+        self._submission = unzip_if_needed(submission, log)
 
         self._is_open_source = False
-
-    def __del__(self):
-        # delete the uncompressed zipfile if needed
-        if self._is_zipfile:
-            shutil.rmtree(self._submission)
 
     def is_valid(self):
         """Returns True if the submission is valid, False otherwise"""

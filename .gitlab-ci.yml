@@ -1,22 +1,9 @@
-.conda-build: &conda-build
-- conda build --user coml --token $CONDA_TOKEN --skip-existing .
-- conda build purge
-
-deploy-conda-linux:
+deploy-conda:
   stage: deploy
   only:
     - tags
     - triggers
   script:
     - module load anaconda/3
-    - *conda-build
-
-deploy-conda-osx:
-  stage: deploy
-  tags:
-    - macos
-  only:
-    - tags
-    - triggers
-  script:
-    - *conda-build
+    - conda build --channel coml --user coml --token $CONDA_TOKEN --skip-existing .
+    - conda build purge
