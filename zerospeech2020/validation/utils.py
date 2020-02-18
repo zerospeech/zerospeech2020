@@ -1,8 +1,13 @@
 """Utility functions for ZRC2020 validation"""
 
+import atexit
 import itertools
-import joblib
 import os
+import shutil
+import tempfile
+import zipfile
+
+import joblib
 import yaml
 
 
@@ -187,3 +192,29 @@ def parallelize(function, njobs, args):
     return list(itertools.chain(
         *joblib.Parallel(n_jobs=njobs)(
             joblib.delayed(function)(*arg) for arg in args)))
+
+
+def unzip_if_needed(submission, log):
+    """Unzip the submission if this is a zip file
+
+    The submission can be a directory or a zipfile, if zipfile it is
+    uncompressed in a temporary folder that is destroyed at program exit.
+
+    """
+    # make sure the submission is either a directory or a zip
+    if os.path.isdir(submission):
+        return submission
+
+    is_zipfile = zipfile.is_zipfile(submission)
+    if not is_zipfile:
+        raise ValueError(f'{submission} is not a directory or a zip file')
+
+    # unzip the submission into a temp directory
+    submission_unzip = tempfile.mkdtemp()
+    log.info('Unzip submission to %s', submission_unzip)
+    zipfile.ZipFile(submission, 'r').extractall(submission_unzip)
+
+    # destroy the temp folder at program exit
+    atexit.register(shutil.rmtree, submission_unzip)
+
+    return submission_unzip

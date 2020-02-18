@@ -8,7 +8,7 @@ from .submission_2020 import Submission2020
 
 
 # setup logging
-logging.basicConfig(format='%(message)s', level=logging.DEBUG)
+logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.DEBUG)
 log = logging.getLogger()
 
 

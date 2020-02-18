@@ -1,172 +1,120 @@
-"""Evaluation for the 2019 data"""
+"""Evaluation for the 2019 part of the ZeroSpeech2020 challenge"""
 
-import math
 import glob
 import logging
 import os
-import pkg_resources
 import shutil
+import tempfile
 
-from zerospeech2020.evaluation import utils
-from zerospeech2020.read_2019_features import read_all
+from zerospeech2020.evaluation import abx, bitrate
 
 
-class Evaluation2019():
-    def __init__(self, submission,
-                 log=logging.getLogger(),
-                 task=None,
-                 language=None,
-                 n_cpu=1,
-                 normalize=1,
-                 distance="cosine",
-                 output=None):
-        self._log = log
-        self.n_cpu = n_cpu
-        if language is not None:
-            self.language = language
-        else:
-            self.language = ['english']
-        if "surprise" in self.language:
-            self._log.error("Can't evaluate surprise language"
-                            "before submission")
+_VALID_LANGUAGES = ['english', 'surprise']
+_VALID_DISTANCES = ['cosine', 'KL', 'levenshtein']
 
-        self.output = output
-        self.distance = distance
-        self.normalize = normalize
-        self.all_distances = ['cosine', 'KL', 'levenshtein']
 
-        if not os.path.isdir(submission):
-            raise ValueError('2017 submission not found')
+def evaluate(submission, dataset, languages, distance, normalize,
+             njobs=1, log=logging.getLogger()):
+    """Evaluation of the 2019 track: bitrate and ABX score
 
-        self._submission = submission
-        if task is not None:
-            self.task_folder = task
-        else:
-            raise ValueError("No ABX task folder given, can't compute ABX")
+    Compute the ABX score and bitrate on the specified languages and durations
+    subsets.
 
-    @staticmethod
-    def _entropy_symbols(n_lines, symbol_counts):
-        """Calculate the entropy for all different symbols in the file
+    Parameters
+    ----------
+    submission (str): the directory of the submission to evaluate
 
-        Argument(s);
-        n_lines : number of symbols in the file (number of lines)
-        symbol_counts : contains all different type of symbols and how many
-        time they appear in the file
+    dataset (str): path to the ZeroSpeech2020 dataset (required for the ABX
+        task files).
 
-        Returns :
-        ent_s : the entropy for all symbols
-        """
-        ent_s = 0
-        for s in symbol_counts.keys():
-            # Number of times symbol s was observed in the file
-            s_occ = symbol_counts[s]
-            # Probability of apparition of symbol s
-            p_s = s_occ/n_lines
-            if p_s > 0:
-                ent_s += -(p_s * math.log(p_s, 2))
-        return ent_s
+    languages (list): elements must be 'english' or 'surprise. Note that ABX
+        tasks are not provided to participants for 'surprise', evaluation for
+        those languages will require an official submission to the challenge.
 
-    def _bitrate(self, symbol_counts,  n_lines, total_duration):
-        """Calculate bitrate
+    distance (str): the distance to use, must be 'cosine', 'KL' or
+        'levenshtein'.
 
-        Argument(s);
-        n_lines : number of duration in the file (e.g number of lines)
-        total_duration : total time duration of file
+    normalize (bool): when True, normalize the DTW path during distance
+        computions.
 
-        Returns :
-        bitrate : the bitrate for encoding given file as :
-        B = (N/D) *  (H(s))
-        Where N is the number of segmentation in the document (lines)
-        D is the totel length of the audio file (sum of all durations)
-        H(s) is the entropy for all symbols s that appears in the document
-        """
-        bitrate = None
-        if len(symbol_counts) > 0:
-            bitrate = n_lines * self._entropy_symbols(
-                n_lines, symbol_counts) / total_duration
-        return bitrate
+    njobs (int): the number of CPU cores to use.
 
-    def bitrate(self, features, bitrate_file_list):
-        symbol_counts, n_lines, total_duration = read_all(
-            bitrate_file_list, features, True, log=False)
-        return self._bitrate(symbol_counts,  n_lines, total_duration)
+    log (logging.Logger): where to send log messages.
 
-    @staticmethod
-    def _get_features(feature_folder, feat_tmp):
-        for file_path in glob.iglob(feature_folder + "/*.txt"):
-            filename = file_path.split('/')[-1]
-            shutil.copyfile(file_path, os.path.join(feat_tmp, filename))
+    Raises
+    ------
+    ValueError if the method fails.
 
-    def evaluate(self):
-        """Run ABX evaluation and bitrate"""
-        details_abx = dict()
-        details_bitrate = dict()
-        scores = dict()
-        results_2019 = dict()
+    Returns
+    -------
+    score (dict): the bitrates and ABX scores in the format score[language] and
+        for each language the following entries: 'scores' are the main results,
+        'details_abx' and 'details_bitrate' expose all the intermediate scores.
 
-        # compute abx
-        for lang in self.language:
-            # Create temp folder for intermediary ABX files
-            tmp = utils.make_temporary()
+    """
+    score = {language: _evaluate_single(
+        submission, dataset, language, distance, normalize, njobs, log)
+             for language in languages}
+    return {'2019': score}
 
-            # extract auxiliary if they exist
-            for folder in ['test', 'auxiliary1', 'auxiliary2']:
-                # Create temp folder for features
-                feat_tmp = utils.make_temporary()
-                feature_folder = os.path.join(
-                    self._submission, "2019", lang, folder)
 
-                # check if folder exist, otherise don't evaluate
-                if not os.path.isdir(feature_folder):
-                    continue
-                self._get_features(feature_folder, feat_tmp)
+def _get_features(feature_folder, feat_tmp):
+    for file_path in glob.iglob(feature_folder + "/*.txt"):
+        filename = file_path.split('/')[-1]
+        shutil.copyfile(file_path, os.path.join(feat_tmp, filename))
 
-                # Get ABX task
-                task = utils.get_tasks(self.task_folder, 2019)[lang]
 
-                # Compute ABX score
-                output = os.path.join(self.output)
-                if os.path.isdir(feature_folder):
-                    for distance_fun in self.all_distances:
-                        if distance_fun == "cosine":
-                            normalize = self.normalize
-                        else:
-                            normalize = None
+def _evaluate_single(submission, dataset, language,
+                     distance, normalize, njobs, log):
+    # ensure the language is valid
+    if language not in _VALID_LANGUAGES:
+        raise ValueError(
+            f'invalid language {language}, must be in '
+            f'{", ".join(_VALID_LANGUAGES)}')
 
-                        abx_score = utils.run_abx(
-                            feat_tmp, task, tmp,
-                            utils.load_feat_2019, self.n_cpu, distance_fun,
-                            normalize, 'across', self._log)
-                        utils.empty_tmp_dir(tmp)
+    if not os.path.isdir(submission):
+        raise ValueError('2017 submission not found')
 
-                        details_abx['{}_{}_abx_{}'.format(
-                            lang, folder, distance_fun)] = abx_score
-                        if distance_fun == self.distance:
-                            abx_output_score = abx_score
-                else:
-                    raise ValueError("Trying to evaluate feature that"
-                                     " doesn't exist for 2019 corpus")
+    # to store the results
+    details_abx = {}
+    details_bitrate = {}
 
-                bitrate_file_list = pkg_resources.resource_filename(
-                    pkg_resources.Requirement.parse('zerospeech2020'),
-                    f'zerospeech2020/share/2019/{lang}/bitrate_filelist.txt')
+    for folder in ['test', 'auxiliary_embedding1', 'auxiliary_embedding2']:
+        # check if folder exist, otherise don't evaluate
+        feature_folder = os.path.join(submission, "2019", language, folder)
+        if not os.path.isdir(feature_folder):
+            continue
 
-                bitrate_score = self.bitrate(feat_tmp, bitrate_file_list)
-                details_bitrate[
-                    '{}_{}_bitrate'.format(lang, folder)] = bitrate_score
+        log.info('evaluating 2019 track for %s %s', language, folder)
 
-                utils.write_scores_19(
-                    abx_output_score, bitrate_score, lang,
-                    self.distance, output)
+        # Create temp folder for features
+        feat_tmp = tempfile.mkdtemp()
+        try:
+            _get_features(feature_folder, feat_tmp)
 
-            scores['{}_abx'.format(lang)] = details_abx[
-                '{}_test_abx_{}'.format(lang, self.distance)]
-            scores['{}_bitrate'.format(lang)] = details_bitrate[
-                '{}_test_bitrate'.format(lang)]
+            # compute bitrate
+            log.debug('computing bitrate ...')
+            bitrate_score = bitrate.bitrate(feat_tmp, language)
+            details_bitrate[folder] = bitrate_score
+            details_abx[folder] = {}
 
-        results_2019 = {
-            'scores': scores,
-            'details_bitrate': details_bitrate,
-            'details_abx': details_abx}
+            # compute abx score
+            for distance_fun in _VALID_DISTANCES:
+                details_abx[folder][distance_fun] = abx.abx(
+                    feat_tmp,
+                    '2019',
+                    abx.get_tasks(dataset, '2019')[language],
+                    'across',
+                    distance_fun,
+                    normalize if distance_fun == "cosine" else None,
+                    njobs=njobs,
+                    log=log)
+        finally:
+            shutil.rmtree(feat_tmp)
 
-        return results_2019
+    return {
+        'scores': {
+            'abx': details_abx['test'][distance],
+            'bitrate': details_bitrate['test']},
+        'details_bitrate': details_bitrate,
+        'details_abx': details_abx}

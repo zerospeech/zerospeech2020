@@ -1,4 +1,4 @@
-# Build the zerospeech2020 conda package. Run with "conda build ."
+# Build the zerospeech2020 conda package. Run with "conda build -c coml ."
 
 {% set name = 'zerospeech2020' %}
 {% set data = load_setup_py_data() %}
