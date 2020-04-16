@@ -1,6 +1,6 @@
 # ZeroSpeech Challenge 2020 Python package
 
-This repository bundles all the scripts required to evaluate and validatea
+This repository bundles all the scripts required to evaluate and validate a
 submission to the [ZeroSpeech Challenge 2020](https://zerospeech.com/2020).
 
 ## Installation
