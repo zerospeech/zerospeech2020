@@ -17,7 +17,7 @@ import sys
 _VALID_LANGUAGES = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
 
 
-def evaluate(submission, languages, log=logging.getLogger()):
+def evaluate(submission, languages, log=logging.getLogger(), njobs=1):
     """Evaluation of the 2017 track2: term discovery
 
     Compute all the term discovery metrics on the specified languages.
@@ -33,6 +33,8 @@ def evaluate(submission, languages, log=logging.getLogger()):
 
     log (logging.Logger): where to send log messages
 
+    njobs (int): number of parallel jobs to compute grouping
+
     Raises
     ------
     ValueError if the method fails to load classes file or gold file for
@@ -46,12 +48,12 @@ def evaluate(submission, languages, log=logging.getLogger()):
 
     """
     score = {
-        language: _evaluate_single(submission, language, log)
+        language: _evaluate_single(submission, language, log, njobs)
         for language in languages}
     return {'2017-track2': score}
 
 
-def _evaluate_single(submission, language, log):
+def _evaluate_single(submission, language, log, njobs):
     log.info('evaluating 2017 track2 for %s', language)
 
     # ensure the language is valid
@@ -73,7 +75,7 @@ def _evaluate_single(submission, language, log):
         raise ValueError(f'file not found: {class_file}')
     disc = _read_discovered(class_file, language, gold, log)
 
-    ned, coverage, details = _evaluate_lang(gold, disc, log)
+    ned, coverage, details = _evaluate_lang(gold, disc, log, njobs)
 
     return {
         'scores': {
@@ -112,7 +114,7 @@ def _read_discovered(class_file, language, gold, log):
         sys.stdout = sys.__stdout__
 
 
-def _evaluate_lang(gold, disc, log):
+def _evaluate_lang(gold, disc, log, njobs):
     """Compute all metrics on requested language"""
     details = {}
 
@@ -124,7 +126,7 @@ def _evaluate_lang(gold, disc, log):
     details['boundary_fscore'] = boundary.fscore
 
     log.debug('computing grouping...')
-    grouping = Grouping(disc)
+    grouping = Grouping(disc, njobs=njobs)
     grouping.compute_grouping()
     details['grouping_precision'] = grouping.precision
     details['grouping_recall'] = grouping.recall
