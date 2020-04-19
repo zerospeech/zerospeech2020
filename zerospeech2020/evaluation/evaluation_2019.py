@@ -27,7 +27,7 @@ def evaluate(submission, dataset, languages, distance, normalize,
     dataset (str): path to the ZeroSpeech2020 dataset (required for the ABX
         task files).
 
-    languages (list): elements must be 'english' or 'surprise. Note that ABX
+    languages (list): elements must be 'english' or 'surprise'. Note that ABX
         tasks are not provided to participants for 'surprise', evaluation for
         those languages will require an official submission to the challenge.
 
@@ -52,6 +52,11 @@ def evaluate(submission, dataset, languages, distance, normalize,
         'details_abx' and 'details_bitrate' expose all the intermediate scores.
 
     """
+    if distance not in _VALID_DISTANCES:
+        raise ValueError(
+            f'invalid distance {distance}, must be in '
+            f'{", ".join(_VALID_DISTANCES)}')
+
     score = {language: _evaluate_single(
         submission, dataset, language, distance, normalize, njobs, log)
              for language in languages}
@@ -73,7 +78,7 @@ def _evaluate_single(submission, dataset, language,
             f'{", ".join(_VALID_LANGUAGES)}')
 
     if not os.path.isdir(submission):
-        raise ValueError('2017 submission not found')
+        raise ValueError('2019 submission not found')
 
     # to store the results
     details_abx = {}
@@ -112,9 +117,14 @@ def _evaluate_single(submission, dataset, language,
         finally:
             shutil.rmtree(feat_tmp)
 
-    return {
-        'scores': {
-            'abx': details_abx['test'][distance],
-            'bitrate': details_bitrate['test']},
-        'details_bitrate': details_bitrate,
-        'details_abx': details_abx}
+    try:
+        return {
+            'scores': {
+                'abx': details_abx['test'][distance],
+                'bitrate': details_bitrate['test']},
+            'details_bitrate': details_bitrate,
+            'details_abx': details_abx}
+    except KeyError:
+        # the folder is not good, nothing found in test, auxiliary_embedding1
+        # or auxiliary_embedding2
+        raise ValurError(f'bad submission {submission}, fount no data to evaluate')
