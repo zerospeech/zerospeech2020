@@ -38,9 +38,9 @@ def get_tasks(dataset, year):
         raise ValueError(f'directory not found: {task_folder}')
 
     if str(year) == '2019':
-        return {"english": os.path.join(task_folder, 'byCtxt_acSpkr.abx')}
+        tasks = {"english": os.path.join(task_folder, 'byCtxt_acSpkr.abx')}
     else:
-        return {
+        tasks = {
             ("english", "1s", "across"): os.path.join(
                 task_folder, "english", '1s', '1s_byCtxt_acSpkr.abx'),
             ("english", "10s", "across"): os.path.join(
@@ -77,6 +77,54 @@ def get_tasks(dataset, year):
                 task_folder, "mandarin", '10s', '10s_byCtxtSpkr.abx'),
             ("mandarin", "120s", "within"): os.path.join(
                 task_folder, "mandarin", '120s', '120s_byCtxtSpkr.abx')}
+
+    # on the challenge evaluation server, we add the ABX tasks for the surprise
+    # languages (those are not available for participants)
+    if 'ZS2020_EVALUATION_SERVER' in os.environ:
+        return _add_surprise_tasks(dataset, year, tasks)
+    else:
+        return tasks
+
+
+def _add_surprise_tasks(dataset, year, tasks):
+    """Adds the ABX tasks for surprise languages
+
+    THOSE FILES ARE NOT AVAILABLE TO PARTICIPANTS, IN USE ONLY OON THE
+    CHALLENGE EVALUATION SERVER.
+
+    """
+    task_folder = os.path.join(dataset, str(year), 'ABXTasks')
+
+    if str(year) == '2019':
+        tasks['surprise'] = os.path.join(task_folder, 'surprise_byCtxt_acSpkr.abx')
+    else:
+        tasks[('LANG1', '1s', 'across')] = os.path.join(
+            task_folder, 'LANG1', '1s', '1s_byCtxt_acSpkr.abx')
+        tasks[('LANG1', '1s', 'within')] = os.path.join(
+            task_folder, 'LANG1', '1s', '1s_byCtxtSpkr.abx')
+        tasks[('LANG1', '10s', 'across')] = os.path.join(
+            task_folder, 'LANG1', '10s', '10s_byCtxt_acSpkr.abx')
+        tasks[('LANG1', '10s', 'within')] = os.path.join(
+            task_folder, 'LANG1', '10s', '10s_byCtxtSpkr.abx')
+        tasks[('LANG1', '120s', 'across')] = os.path.join(
+            task_folder, 'LANG1', '120s', '120s_byCtxt_acSpkr.abx')
+        tasks[('LANG1', '120s', 'within')] = os.path.join(
+            task_folder, 'LANG1', '120s', '120s_byCtxtSpkr.abx')
+
+        tasks[('LANG2', '1s', 'across')] = os.path.join(
+            task_folder, 'LANG2', '1s', '1s_byCtxt_acSpkr.abx')
+        tasks[('LANG2', '1s', 'within')] = os.path.join(
+            task_folder, 'LANG2', '1s', '1s_byCtxtSpkr.abx')
+        tasks[('LANG2', '10s', 'across')] = os.path.join(
+            task_folder, 'LANG2', '10s', '10s_byCtxt_acSpkr.abx')
+        tasks[('LANG2', '10s', 'within')] = os.path.join(
+            task_folder, 'LANG2', '10s', '10s_byCtxtSpkr.abx')
+        tasks[('LANG2', '120s', 'across')] = os.path.join(
+            task_folder, 'LANG2', '120s', '120s_byCtxt_acSpkr.abx')
+        tasks[('LANG2', '120s', 'within')] = os.path.join(
+            task_folder, 'LANG2', '120s', '120s_byCtxtSpkr.abx')
+
+    return tasks
 
 
 def _load_features_2017(file_path):

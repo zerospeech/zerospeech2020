@@ -99,6 +99,15 @@ def _read_gold(language, log):
         pkg_resources.Requirement.parse('tdev2'),
         'tdev2/share/{}.phn'.format(language))
 
+    # on the challenge evaluation server, we add the gold for the surprise
+    # languages (those are not available for participants)
+    if language in ('LANG1', 'LANG2') and 'ZS2020_EVALUATION_SERVER' in os.environ:
+        wrd_path = os.path.join(
+            os.environ['ZS2020_EVALUATION_SERVER'], '2017', f'{language}.wrd')
+
+        phn_path = os.path.join(
+            os.environ['ZS2020_EVALUATION_SERVER'], '2017', f'{language}.phn')
+
     if not os.path.isfile(wrd_path) or not os.path.isfile(phn_path):
         raise ValueError(f'failed to load gold files for {language}')
 
