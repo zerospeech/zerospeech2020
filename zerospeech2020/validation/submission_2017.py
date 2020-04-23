@@ -34,9 +34,8 @@ class Submission2017:
         """Raises a ValueError if the submission is not valid"""
         existing = validate_directory(
             self._submission, '2017',
-            ['metadata.yaml', 'track1', 'track2'] +
-            ['code'] if self._is_open_source else [],
-            self._log)
+            ['metadata.yaml'] + (['code'] if self._is_open_source else []),
+            self._log, ['track1', 'track2'])
 
         if 'track1' not in existing and 'track2' not in existing:
             raise ValueError(
