@@ -127,4 +127,4 @@ def _evaluate_single(submission, dataset, language,
     except KeyError:
         # the folder is not good, nothing found in test, auxiliary_embedding1
         # or auxiliary_embedding2
-        raise ValurError(f'bad submission {submission}, fount no data to evaluate')
+        raise ValueError(f'bad submission {submission}, fount no data to evaluate')

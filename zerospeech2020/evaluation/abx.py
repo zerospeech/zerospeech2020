@@ -80,7 +80,7 @@ def get_tasks(dataset, year):
 
     # on the challenge evaluation server, we add the ABX tasks for the surprise
     # languages (those are not available for participants)
-    if 'ZS2020_EVALUATION_SERVER' in os.environ:
+    if 'ZS2020_EVALUATION_DATA' in os.environ:
         return _add_surprise_tasks(dataset, year, tasks)
     else:
         return tasks

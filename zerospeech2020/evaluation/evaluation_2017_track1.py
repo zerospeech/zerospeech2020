@@ -1,6 +1,7 @@
 """Evaluation of the 2017 track1 part of the Zerospeech2020 challenge"""
 
 import logging
+import numpy as np
 import os
 
 from zerospeech2020.evaluation import abx
@@ -95,16 +96,37 @@ def _evaluate_single(
         raise ValueError(f'directory not found: {features_directory}')
 
     score = {}
-    for distance in _VALID_DISTANCES:
-        score[distance] = abx.abx(
+    # KL distance does not support negative values, detect them here
+    if _has_negative_values(features_directory):
+        log.debug('features contain negative values, skipping KL distance')
+        score['cosine'] = abx.abx(
             features_directory,
             '2017',
             abx.get_tasks(dataset, '2017')[(language, duration, task)],
             task,
-            distance,
+            'cosine',
             normalize,
             njobs=njobs,
             log=log)
-
-    score['best'] = 'cosine' if score['cosine'] <= score['KL'] else 'KL'
+        score['KL'] = '-'
+        score['best'] = 'cosine'
+    else:
+        for distance in _VALID_DISTANCES:
+            score[distance] = abx.abx(
+                features_directory,
+                '2017',
+                abx.get_tasks(dataset, '2017')[(language, duration, task)],
+                task,
+                distance,
+                normalize,
+                njobs=njobs,
+                log=log)
+        score['best'] = 'cosine' if score['cosine'] <= score['KL'] else 'KL'
     return score
+
+
+def _has_negative_values(directory):
+    for f in os.listdir(directory):
+        if np.min(np.loadtxt(os.path.join(directory, f))) < 0:
+            return True
+    return False
