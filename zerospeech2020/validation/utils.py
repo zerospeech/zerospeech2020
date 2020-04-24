@@ -40,9 +40,9 @@ def validate_yaml(filename, name, entries, optional_entries={}):
         raise ValueError(f'{name} file not found: {filename}')
 
     try:
-        metadata = yaml.safe_load(open(filename, 'r'))
-    except yaml.YAMLError:
-        raise ValueError(f'failed to parse {name}')
+        metadata = yaml.safe_load(open(filename, 'r', encoding='utf8').read().replace('\t', ' '))
+    except yaml.YAMLError as err:
+        raise ValueError(f'failed to parse {name}: {err}')
 
     if not metadata:
         raise ValueError(f'{name} file is empty')

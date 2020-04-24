@@ -32,7 +32,7 @@ class Submission2019:
         validate_directory(
             self._submission, '2019',
             ['metadata.yaml', 'english', 'surprise'] +
-            ['code'] if self._is_open_source else [], self._log)
+            (['code'] if self._is_open_source else []), self._log)
 
         # detect if we have auxiliary 1 and 2 embeddings (because in this
         # case we must check they are described in metadata)

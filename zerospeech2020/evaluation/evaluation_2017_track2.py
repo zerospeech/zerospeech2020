@@ -9,6 +9,7 @@ from tdev2.readers.gold_reader import Gold
 from tdev2.readers.disc_reader import Disc
 
 import logging
+import signal
 import os
 import pkg_resources
 import sys
@@ -134,12 +135,24 @@ def _evaluate_lang(gold, disc, log, njobs):
     details['boundary_recall'] = boundary.recall
     details['boundary_fscore'] = boundary.fscore
 
-    log.debug('computing grouping...')
-    grouping = Grouping(disc, njobs=njobs)
-    grouping.compute_grouping()
-    details['grouping_precision'] = grouping.precision
-    details['grouping_recall'] = grouping.recall
-    details['grouping_fscore'] = grouping.fscore
+    # put timeout, if grouping takes too long, just continue
+    def handler(signum, frame):
+        print('grouping takes too long, continuing')
+        raise Exception('timeout')
+
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(7200)
+    try:
+        log.debug('computing grouping...')
+        grouping = Grouping(disc)
+        grouping.compute_grouping()
+        details['grouping_precision'] = grouping.precision
+        details['grouping_recall'] = grouping.recall
+        details['grouping_fscore'] = grouping.fscore
+    except Exception as exc:
+        details['grouping_precision'] = 'NA'
+        details['grouping_recall'] = 'NA'
+        details['grouping_fscore'] = 'NA'
 
     log.debug('computing token and type...')
     token_type = TokenType(gold, disc)
