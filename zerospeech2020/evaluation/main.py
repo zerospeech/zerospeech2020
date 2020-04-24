@@ -73,7 +73,8 @@ def _parse_arguments():
     # parser for 2017 track1 part of the challenge
     parser_2017_track1 = subparser.add_parser(
         '2017-track1',
-        description='Evaluation of the 2017 track1 part of the challenge')
+        description='''Evaluation of the 2017 track1 part of the challenge,
+        the 2 distances (cosine and KL) are evaluated''')
     _add_common_arguments(parser_2017_track1)
     parser_2017_track1.add_argument(
         '-l', '--language', default=None,
@@ -83,9 +84,6 @@ def _parse_arguments():
         '-dr', '--duration', default=None,
         choices=['1s', '10s', '120s'],
         help='Evaluate only one duration subset, default is to evaluate all.')
-    parser_2017_track1.add_argument(
-        '-d', '--distance', default='cosine', choices=['cosine', 'KL'],
-        help='Choose metric for ABX score, default to %(default)s.')
     parser_2017_track1.add_argument(
         '-n', '--normalize', type=bool, metavar='<bool>', default=True,
         help="choose to normalize DTW distance, default to %(default)s.")
@@ -121,9 +119,6 @@ def _parse_arguments():
         'this assumes a complete submission')
     _add_common_arguments(parser_all)
 
-    parser_all.add_argument(
-        '-d17', '--distance-2017', default='cosine', choices=['cosine', 'KL'],
-        help='Choose metric for 2017 track1 ABX, default to %(default)s.')
     parser_all.add_argument(
         '-n17', '--normalize_2017', type=bool, metavar='<bool>', default=True,
         help="""choose to normalize DTW distance for 2017 track1,
@@ -184,7 +179,6 @@ def main():
                 dataset,
                 languages,
                 durations,
-                args.distance,
                 args.normalize,
                 njobs=args.njobs,
                 log=log)
@@ -224,7 +218,6 @@ def main():
                 dataset,
                 ['english', 'french', 'mandarin'],
                 ['1s', '10s', '120s'],
-                args.distance_2017,
                 args.normalize_2017,
                 njobs=args.njobs,
                 log=log)

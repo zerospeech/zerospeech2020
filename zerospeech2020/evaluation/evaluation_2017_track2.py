@@ -18,7 +18,7 @@ import sys
 _VALID_LANGUAGES = ['english', 'french', 'mandarin', 'LANG1', 'LANG2']
 
 
-def evaluate(submission, languages, log=logging.getLogger()):
+def evaluate(submission, languages, log=logging.getLogger(), njobs=1):
     """Evaluation of the 2017 track2: term discovery
 
     Compute all the term discovery metrics on the specified languages.
@@ -34,6 +34,8 @@ def evaluate(submission, languages, log=logging.getLogger()):
 
     log (logging.Logger): where to send log messages
 
+    njobs (int): number of parallel jobs to compute grouping
+
     Raises
     ------
     ValueError if the method fails to load classes file or gold file for
@@ -47,12 +49,12 @@ def evaluate(submission, languages, log=logging.getLogger()):
 
     """
     score = {
-        language: _evaluate_single(submission, language, log)
+        language: _evaluate_single(submission, language, log, njobs)
         for language in languages}
     return {'2017-track2': score}
 
 
-def _evaluate_single(submission, language, log):
+def _evaluate_single(submission, language, log, njobs):
     log.info('evaluating 2017 track2 for %s', language)
 
     # ensure the language is valid
@@ -74,7 +76,7 @@ def _evaluate_single(submission, language, log):
         raise ValueError(f'file not found: {class_file}')
     disc = _read_discovered(class_file, language, gold, log)
 
-    ned, coverage, details = _evaluate_lang(gold, disc, log)
+    ned, coverage, details = _evaluate_lang(gold, disc, log, njobs)
 
     return {
         'scores': {
@@ -98,6 +100,15 @@ def _read_gold(language, log):
         pkg_resources.Requirement.parse('tdev2'),
         'tdev2/share/{}.phn'.format(language))
 
+    # on the challenge evaluation server, we add the gold for the surprise
+    # languages (those are not available for participants)
+    if language in ('LANG1', 'LANG2') and 'ZS2020_EVALUATION_SERVER' in os.environ:
+        wrd_path = os.path.join(
+            os.environ['ZS2020_EVALUATION_SERVER'], '2017', f'{language}.wrd')
+
+        phn_path = os.path.join(
+            os.environ['ZS2020_EVALUATION_SERVER'], '2017', f'{language}.phn')
+
     if not os.path.isfile(wrd_path) or not os.path.isfile(phn_path):
         raise ValueError(f'failed to load gold files for {language}')
 
@@ -113,7 +124,7 @@ def _read_discovered(class_file, language, gold, log):
         sys.stdout = sys.__stdout__
 
 
-def _evaluate_lang(gold, disc, log):
+def _evaluate_lang(gold, disc, log, njobs):
     """Compute all metrics on requested language"""
     details = {}
 

@@ -13,7 +13,7 @@ _VALID_DISTANCES = ['cosine', 'KL']
 
 
 def evaluate(submission, dataset, languages, durations,
-             distance, normalize, njobs=1, log=logging.getLogger()):
+             normalize, njobs=1, log=logging.getLogger()):
     """Evaluation of the 2017 track1: ABX score
 
     Compute the ABX score on the specified languages and durations subsets.
@@ -32,8 +32,6 @@ def evaluate(submission, dataset, languages, durations,
 
     duration (list): elements must be '1s', '10s' or '120s'.
 
-    distance (str): the distance to use, must be 'cosine' or 'KL'.
-
     normalize (bool): when True, normalize the DTW path during distance
         computions.
 
@@ -47,12 +45,13 @@ def evaluate(submission, dataset, languages, durations,
 
     Returns
     -------
-    score (dict) : the ABX scores for the specified languages, durations and
-        distance in the format score[language][duration][within / across]. An
-        ABX score is given as an error rate in %.
+    score (dict) : the ABX scores for the specified languages, durations for
+        all the supported distances in the format
+        score[language][duration][within / across][distance]. An ABX score is
+        given as an error rate in %.
 
     """
-    score = {'params': {'distance': distance, 'normalize': normalize}}
+    score = {'params': {'normalize': normalize}}
     for language in languages:
         score[language] = {}
         for duration in durations:
@@ -60,13 +59,13 @@ def evaluate(submission, dataset, languages, durations,
             for task in _VALID_TASKS:
                 score[language][duration][task] = _evaluate_single(
                     submission, dataset, language, duration,
-                    task, distance, normalize, njobs, log)
+                    task, normalize, njobs, log)
     return {'2017-track1': score}
 
 
 def _evaluate_single(
         submission, dataset, language, duration, task,
-        distance, normalize, njobs, log):
+        normalize, njobs, log):
     log.info('evaluating 2017 track1 for %s %s %s', language, duration, task)
 
     # ensure the language is valid
@@ -87,12 +86,6 @@ def _evaluate_single(
             f'invalid task type {task}, must be in '
             f'{", ".join(_VALID_TASKS)}')
 
-    # ensure the distance is valid
-    if distance not in _VALID_DISTANCES:
-        raise ValueError(
-            f'invalid distance {distance}, must be in '
-            f'{", ".join(_VALID_DISTANCES)}')
-
     if not os.path.isdir(submission):
         raise ValueError('2017 submission not found')
 
@@ -101,12 +94,17 @@ def _evaluate_single(
     if not os.path.isdir(features_directory):
         raise ValueError(f'directory not found: {features_directory}')
 
-    return abx.abx(
-        features_directory,
-        '2017',
-        abx.get_tasks(dataset, '2017')[(language, duration, task)],
-        task,
-        distance,
-        normalize,
-        njobs=njobs,
-        log=log)
+    score = {}
+    for distance in _VALID_DISTANCES:
+        score[distance] = abx.abx(
+            features_directory,
+            '2017',
+            abx.get_tasks(dataset, '2017')[(language, duration, task)],
+            task,
+            distance,
+            normalize,
+            njobs=njobs,
+            log=log)
+
+    score['best'] = 'cosine' if score['cosine'] <= score['KL'] else 'KL'
+    return score
