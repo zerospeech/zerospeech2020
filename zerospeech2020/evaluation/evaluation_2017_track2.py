@@ -1,12 +1,12 @@
 """Evaluation of the 2017 track2 part of the Zerospeech2020 challenge"""
 
-from tdev2.measures.ned import Ned
-from tdev2.measures.boundary import Boundary
-from tdev2.measures.grouping import Grouping
-from tdev2.measures.coverage import Coverage
-from tdev2.measures.token_type import TokenType
-from tdev2.readers.gold_reader import Gold
-from tdev2.readers.disc_reader import Disc
+from tde.measures.ned import Ned
+from tde.measures.boundary import Boundary
+from tde.measures.grouping import Grouping
+from tde.measures.coverage import Coverage
+from tde.measures.token_type import TokenType
+from tde.readers.gold_reader import Gold
+from tde.readers.disc_reader import Disc
 
 import logging
 import signal
@@ -94,11 +94,11 @@ def _read_gold(language, log):
     """
     log.debug('reading track2 gold for %s', language)
     wrd_path = pkg_resources.resource_filename(
-        pkg_resources.Requirement.parse('tdev2'),
-        'tdev2/share/{}.wrd'.format(language))
+        pkg_resources.Requirement.parse('tde'),
+        'tde/share/{}.wrd'.format(language))
     phn_path = pkg_resources.resource_filename(
-        pkg_resources.Requirement.parse('tdev2'),
-        'tdev2/share/{}.phn'.format(language))
+        pkg_resources.Requirement.parse('tde'),
+        'tde/share/{}.phn'.format(language))
 
     # on the challenge evaluation server, we add the gold for the surprise
     # languages (those are not available for participants)
